@@ -1,0 +1,139 @@
+You are an expert full-stack engineer. Build a demo-ready web app called **Portal** (blue accent) that delivers short-form professional content. Requirements below are canonical. Use **Next.js (App Router)** + **TypeScript** + **Tailwind** + **shadcn/ui** + **Prisma** + **SQLite** (file-based DB). Mobile-responsive. Light theme only.
+
+## High-level
+- Tabs (bottom nav on mobile, top/side on desktop): **Home**, **Jobs**, **Create**, **Inbox**, **Profile** (in this order).
+- Gate the app behind a simple login/registration screen. No third-party auth.
+- Persist data in SQLite via Prisma. Include a robust **seed** script.
+- Provide minimal API routes for CRUD. No external services required except optional OpenAI key for AI assist.
+- Include a simple generated logo+wordmark (“Portal”).
+
+## Auth (demo-simple)
+- Registration fields: **email** (format check only), **username** (required, unique), **password** (min 6 chars).
+- On register: insert into DB, then log the user in.
+- On login: match **username + password** against DB. If match → issue a **fake session token** (e.g., signed/opaque string) and store in `localStorage`. Middleware/guard redirects to `/login` if no session.
+- Include **Logout** in Profile → clears session and redirects to login.
+- No email verification, no password reset.
+- Form validation with helpful errors.
+
+## Data model (Prisma)
+Define at least these models (adjust as needed):
+- `User { id, email, username, passwordHash, bio?, avatarUrl?, followersCount, followingCount, createdAt }`
+- `Post { id, authorId -> User, title, description, body, tags (string[] via JSON), category, sponsored Boolean, isDraft Boolean, createdAt, updatedAt,
+         stats: likesCount, commentsCount, savesCount, sharesCount }`
+- `Like { id, userId -> User, postId -> Post, createdAt }`
+- `Save { id, userId -> User, postId -> Post, createdAt }`
+- `Comment { id, postId -> Post, authorId -> User, body, createdAt }`
+- `Follow { id, followerId -> User, followingId -> User, createdAt }`
+- `MessageThread { id, userAId, userBId, createdAt, updatedAt, unreadForUserA Int, unreadForUserB Int }`
+- `Message { id, threadId -> MessageThread, senderId -> User, body, createdAt }`
+- `Notification { id, userId -> User, type: enum('LIKE','COMMENT','FOLLOW','MENTION','SYSTEM'), data JSON, isRead Boolean, createdAt }`
+- `Job { id, title, company, location, salaryRange, tags (JSON), level, remote Boolean, postedAt, blurb, applyUrl }`
+- `PortalSystem { id, key unique, value JSON }` // for feature flags / first-post-like sent, etc.
+
+Note: Use computed counts where convenient but also store denormalized counts on `Post` to simplify sorting.
+
+## Seeding
+- Create **6 users**, including an official account: **"Portal Official"** (handle `@portal`).
+- Create **~30 posts** across categories: Tech, Marketing, Finance, Design, Operations. Randomize timestamps over the last 30 days.
+- Vary interactions (likes/comments/saves/shares) widely so we can demo **Trending vs Recent** sorting.
+- Include a handful of **sponsored** posts (`sponsored: true`) and ensure they render with a badge.
+- Create several **Jobs** with diverse tags, locations, levels, remote flags, and salary ranges.
+- Auto-follow behavior: have “Portal Official” follow every new user at seed time.
+- Seed **DM threads** so Inbox is not empty.
+
+## AI Assist (optional)
+- Provide API endpoints that call OpenAI **only if** `process.env.OPENAI_API_KEY` exists; otherwise return deterministic stubbed responses.
+- Endpoints:
+  - `/api/ai/summarize` → returns a short summary of a given body.
+  - `/api/ai/rewrite` → returns a polished rewrite of a given body.
+  - `/api/ai/title` → returns 3 catchy title suggestions.
+- Client-side buttons in the **Create** composer: *Summarize*, *Rewrite*, *Title ideas*.
+
+## Navigation & Layout
+- Bottom tab bar (mobile) with icons + labels; desktop shows a clean header with the same sections.
+- Pages/Routes:
+  - `/login`, `/register`
+  - `/` (Home)
+  - `/jobs`
+  - `/create`
+  - `/inbox`
+  - `/profile/[username]` (+ `/profile/me` shortcut)
+  - `/settings` as a section inside Profile (NOT a bottom tab)
+- Show **badge count only for unread DMs** on the Inbox tab (don’t badge likes/comments).
+
+## Home (Feed)
+- Content type: short articles/mini-reads (video capture is stub-only).
+- Sorting toggle in header: **Trending | Recent**.
+  - **Trending score** (calc in SQL/Prisma or runtime): `likes*3 + comments*5 + shares*6 + saves*4 + recency_decay`.
+  - Recent is pure reverse-chronological (`createdAt desc`).
+- Cards show: title, sponsored badge (if true), author (username + avatar), timestamp (relative), short description, category/tags, quick actions (Like, Comment, Save, Share).
+- Infinite scroll / “Load more”.
+- Post page/modal with full body and comments.
+
+## Create
+- Composer fields: title, description, body (rich text or markdown), tags (comma or chips), **category**, **Sponsored** toggle, **Draft/Publish** state.
+- Buttons for **AI: Summarize / Rewrite / Title ideas**.
+- **Video capture** button is present but disabled or stubs a preview—no storage.
+- On **Publish**:
+  - Insert post with `isDraft=false`.
+  - Trigger an **auto-like** from **Portal Official** on the **user’s first published post** and create a **notification** for the author.
+  - If this is the user’s first post ever, also create a SYSTEM notification: “Welcome to Portal!”.
+
+## Jobs
+- Grid or stack of **flip cards** (front/back) like Simplify Explore:
+  - **Front**: title, company, tags, level, remote?, posted date, salary snippet.
+  - **Back**: short blurb + fake **Apply** link (href `#`), **Save** and **Share** actions.
+- Filter/search by keywords, tags, remote, level.
+- Persist saved jobs for the user.
+
+## Inbox
+- Two tabs: **Notifications** and **Messages**.
+- **Notifications**: list likes, comments, new followers, mentions, and the Portal Official like event; mark-as-read.
+- **Messages (1:1 only)**:
+  - Show conversation list with **unread badges**; clicking opens thread.
+  - You can **start a conversation** with any user even if they haven’t replied yet (create the thread immediately).
+  - No realtime needed; just append messages.
+- On **signup**, automatically create a thread from **Portal Official → new user** with a friendly **welcome message** (left unread).
+
+## Profile
+- Fields: avatar (optional), username (required), bio (optional), follower/following counts.
+- Sections: **Posts** (only the user’s own posts). We do **not** need “Liked” or “Saved” galleries.
+- **Follow** model: one-way follow button on other users’ profiles; updates counts and creates a follow notification.
+- Settings: username edit (unique check), bio edit, avatar upload (optional, data URL or static placeholder), **Logout**.
+
+## Notifications rules
+- Generate notifications for: LIKE, COMMENT, FOLLOW, MENTION, plus SYSTEM (welcome, first-like).
+- Provide a small bell icon with count INSIDE Notifications tab ONLY (optional), but **Inbox bottom tab badge = unread DMs only**.
+
+## UI/UX polish
+- Use shadcn/ui for cards, buttons, inputs, tabs, badges, dropdowns, dialogs, toasts.
+- Blue accent color; light theme.
+- Clean typography, friendly empty states, and helpful toasts (Saved, Posted, Copied link, etc.).
+
+## Implementation notes
+- Put Prisma schema in `/prisma/schema.prisma`. Use SQLite file DB: `provider = "sqlite"` and `url = "file:./dev.db"`.
+- Scripts:
+  - `prisma generate`
+  - `prisma db push`
+  - `prisma db seed` (seed TypeScript file populates users/posts/jobs/threads/notifications with realistic variation).
+- Protect app routes with a simple session guard (server or client); if no token → redirect to `/login`.
+- Use Zod for validation. Hash passwords with bcrypt (even for demo).
+- Build minimal share links for posts (`/post/[id]`) even if social share is stubbed.
+- Keep code organized: `lib/ai.ts`, `lib/auth.ts`, `lib/trending.ts`, `components/*` (PostCard, JobCardFlip, MessageThread, NotificationList, ProfileHeader, Composer, BottomNav).
+- Provide `README.md` with setup steps.
+
+## Demo script guarantee (must work):
+1) **Register** → auto-login → redirected to **Home**; background: Portal Official sends welcome DM.
+2) **Login** subsequently using username+password.
+3) **View feed**, toggle **Trending/Recent**, interact (like/comment/save) with a post.
+4) **Create** a post using AI assist (stub OK) → publish → Portal Official **auto-likes** it → Notification appears.
+5) **Follow** a user from their profile.
+6) **Start a DM** with that user → **Inbox** shows the conversation immediately (even if they never reply).
+7) **Profile** shows user’s posts and updated counts.
+
+## Env & run
+- Provide npm scripts: `dev`, `build`, `start`, `seed`.
+- Read `OPENAI_API_KEY` from `.env.local`; if absent, AI endpoints return deterministic stub text.
+- On first boot: if DB empty, auto-run seed or instruct to run `npm run seed`.
+
+Now generate the full project with all pages, routes, Prisma models, seed script, and UI components so it runs locally on Replit with a single click. Keep code clean and production-like, but optimize for demo speed and reliability.

@@ -1,0 +1,165 @@
+You are an expert full-stack engineer. Build a demo-ready social app called **Portal** with the following requirements. Use a monorepo structure:
+
+- Frontend: **React + TypeScript + Vite**, **Tailwind CSS**, **shadcn/ui** (light theme, blue accent), mobile-first responsive.
+- Backend: **Express + TypeScript**.
+- Database: **Prisma + SQLite** (file DB) with a seed script.
+- AI: Optional OpenAI integration; if no key, return deterministic stubbed outputs.
+- Auth: Custom username/password (no Replit Auth, no OAuth).
+
+## Monorepo Layout
+- `/apps/web` → React app (Vite). Uses shadcn/ui for components, client-side routing (react-router).
+- `/apps/api` → Express server with REST endpoints. Prisma client here.
+- `/packages/ui` (optional) → shared UI primitives if needed.
+- Root scripts to dev both concurrently.
+
+## Must-have Demo Flow (guarantee it works)
+1) Register (email format + unique username + password min 6) → auto-login → Home feed.
+2) Login with username+password later.
+3) Toggle **Trending | Recent** in feed; like/comment/save/share a post.
+4) Create a post with AI assist (stub OK) → publish → **Portal Official auto-likes** it → notification appears.
+5) Follow another user.
+6) Start a 1:1 DM; thread appears immediately (even if they never reply).
+7) Inbox shows: Notifications + Messages (with **badge count only for unread DMs**).
+8) Profile shows user info and **only the user’s own posts**; can Logout.
+
+## Auth (demo-simple)
+- Registration: `email` (regex check), `username` (required, unique), `password` (min 6, bcrypt hash).
+- Login: match `username + password`. On success, issue a **fake session token** (opaque string) and return it to the client.
+- Frontend stores token in `localStorage`. Add a simple route guard: if no token, redirect to `/login`.
+- Logout clears token and redirects to `/login`.
+
+## Bottom Navigation (mobile) / Header (desktop)
+**Order:** Home • Jobs • Create • Inbox • Profile  
+Settings live inside Profile (NOT a separate tab).
+
+## Prisma Schema (outline)
+Models (fields may be expanded as needed):
+- `User { id, email, username, passwordHash, bio?, avatarUrl?, followersCount Int @default(0), followingCount Int @default(0), createdAt }`
+- `Post { id, authorId -> User, title, description, body, tags Json, category String, sponsored Boolean @default(false), isDraft Boolean @default(false), createdAt, updatedAt, likesCount Int, commentsCount Int, savesCount Int, sharesCount Int }`
+- `Like { id, userId -> User, postId -> Post, createdAt }`
+- `Save { id, userId -> User, postId -> Post, createdAt }`
+- `Comment { id, postId -> Post, authorId -> User, body, createdAt }`
+- `Follow { id, followerId -> User, followingId -> User, createdAt }`
+- `MessageThread { id, userAId -> User, userBId -> User, createdAt, updatedAt, unreadForUserA Int @default(0), unreadForUserB Int @default(0) }`
+- `Message { id, threadId -> MessageThread, senderId -> User, body, createdAt }`
+- `Notification { id, userId -> User, type String /* LIKE|COMMENT|FOLLOW|MENTION|SYSTEM */, data Json, isRead Boolean @default(false), createdAt }`
+- `Job { id, title, company, location, salaryRange, tags Json, level, remote Boolean, postedAt, blurb, applyUrl }`
+- `PortalSystem { id, key String @unique, value Json }` // e.g., flags like “first-like-sent:<userId>”
+
+Use SQLite (`provider = "sqlite"`) and `url = "file:./dev.db"`.
+
+## Seeding (critical)
+- Create **6 users**, including official account **Portal Official** (`@portal`), plus ~5 diverse users.
+- Create **~30 posts** across categories (Tech, Marketing, Finance, Design, Operations) with varied timestamps in last 30 days.
+- Randomize interactions to showcase **Trending** vs **Recent** (likes/comments/saves/shares vary widely).
+- Include several **sponsored** posts (boolean true).
+- Create a handful of **Jobs** with flip-card-worthy info (title, company, location, level, remote, salary, tags, postedAt, blurb, applyUrl).
+- Seed follows, DM threads, messages, and notifications so the app is lively on first run.
+- Ensure **Portal Official** auto-follows all users in seed.
+
+## Backend (Express) — Endpoints (suggested)
+Auth:
+- `POST /api/auth/register` {email, username, password} → create user, auto-login, return `{token, user}`.
+- `POST /api/auth/login` {username, password} → verify, return `{token, user}`.
+
+Posts & Feed:
+- `GET /api/posts?sort=trending|recent&cursor=...` → paginated feed.
+  - **Trending score** = `likesCount*3 + commentsCount*5 + sharesCount*6 + savesCount*4 + recency_decay`.
+  - Implement `recency_decay` as a multiplier (e.g., 1/(1 + ageInDays/7)).
+- `GET /api/posts/:id`
+- `POST /api/posts` (auth) → create (draft or published), sponsored flag allowed.
+- `POST /api/posts/:id/like` (auth)
+- `POST /api/posts/:id/save` (auth)
+- `POST /api/posts/:id/comment` (auth)
+
+AI Assist (return OpenAI results if `OPENAI_API_KEY` present; else stub deterministic text):
+- `POST /api/ai/summarize` { body }
+- `POST /api/ai/rewrite` { body }
+- `POST /api/ai/title` { body } → return three title suggestions
+
+Jobs:
+- `GET /api/jobs?query=&tags=&remote=&level=&cursor=...`
+- `POST /api/jobs/:id/save` (auth)
+
+Social:
+- `POST /api/users/:id/follow` (auth)
+- `GET /api/users/:username` → profile with user’s own posts only
+
+Inbox:
+- `GET /api/inbox/notifications` (auth) → list + mark-as-read endpoint
+- `GET /api/inbox/threads` (auth) → show threads with unread counts
+- `POST /api/inbox/threads` (auth) { otherUserId } → **create thread immediately** if not exists
+- `GET /api/inbox/threads/:id/messages` (auth)
+- `POST /api/inbox/threads/:id/messages` (auth) { body } → increments unread for the recipient
+
+System Automations (must implement):
+- On **signup**: create a thread from **Portal Official** to the new user with a **welcome message**; leave it **unread**.
+- On **first published post** by a user: create a **Like from Portal Official** and a **LIKE notification** for that author. Store a flag in `PortalSystem` to avoid repeating.
+- **Badge logic**: Inbox bottom-tab badge shows **only unread DM count** (sum of user’s thread unread fields).
+- Create notifications on: LIKE, COMMENT, FOLLOW, MENTION, and SYSTEM (welcome, first-like).
+
+## Frontend (React + Vite)
+Routing (react-router):
+- `/login`, `/register`
+- `/` (Home)
+- `/jobs`
+- `/create`
+- `/inbox` (tabs: Notifications, Messages)
+- `/profile/me`
+- `/profile/:username`
+- `/post/:id`
+
+Global:
+- Session context that reads token from `localStorage`. Route guard redirects to `/login` if no token.
+- Tailwind + shadcn/ui: Cards, Buttons, Inputs, Tabs, Badges, Dialogs, DropdownMenu, Toasts.
+
+Home:
+- Header with **Trending | Recent** toggle.
+- Post cards (title, sponsored badge, author, relative time, tags/category, quick actions Like/Comment/Save/Share).
+- Infinite scroll or “Load more”.
+
+Create:
+- Composer with **title, description, body (rich text or markdown), tags, category, Sponsored toggle, Draft/Publish**.
+- Buttons: **Summarize / Rewrite / Title ideas** (call AI endpoints; show stub when no key).
+- Video capture button present but stubbed/disabled.
+
+Jobs:
+- **Flip-card** UI (front/back):
+  - Front: title, company, tags, level, remote?, posted date, salary.
+  - Back: blurb + fake Apply link, Save/Share buttons.
+- Filters: search bar, tags, remote, level.
+
+Inbox:
+- Tabs: **Notifications** and **Messages**.
+- Notifications list with mark-as-read.
+- Messages: thread list with **unread badges**; thread view; composer to send; can **start a new conversation** with any user (thread created immediately).
+
+Profile:
+- Avatar (optional), username (required), bio (optional), follower/following counts.
+- Grid/list of **the user’s own posts only**.
+- Follow button on other users’ profiles; updates counts and creates notification.
+- Settings section (inside Profile): edit username (unique check), bio, avatar upload (optional), **Logout**.
+
+## Styling & Polish
+- Light theme only, blue accent, clean typography.
+- Friendly empty states (e.g., “No messages yet — say hello!”).
+- Toasts for actions (Saved, Liked, Copied link, Posted, etc.).
+
+## Env & Scripts
+- Backend reads `OPENAI_API_KEY` if present; otherwise AI endpoints return deterministic stubs.
+- Root scripts:
+  - `dev` → concurrently runs API and Web (with proxy from Vite to Express).
+  - `build`, `start`.
+  - `seed` → runs Prisma seed.
+- Prisma: `prisma generate`, `prisma db push`, `prisma db seed`.
+- On first boot, if DB empty, run seed automatically or show a CLI note.
+
+## Delivery
+Generate the full project with:
+- Prisma schema + migrations/`db push`, robust **seed** creating users/posts/jobs/threads/notifications.
+- All Express routes and middleware.
+- React pages/components as described.
+- A simple **Portal** logo/wordmark.
+- Clear README with setup and run instructions (single-click/run friendly).
+
+Ensure everything runs locally with **no external services** (except optional OpenAI key), and that all demo requirements above function exactly as specified.
