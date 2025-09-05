@@ -37,7 +37,6 @@ export default function ProfileHeader({
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editData, setEditData] = useState({
     username: user?.username || '',
-    bio: user?.bio || '',
   });
   const { toast } = useToast();
 
@@ -117,16 +116,6 @@ export default function ProfileHeader({
                               value={editData.username}
                               onChange={(e) => setEditData(prev => ({ ...prev, username: e.target.value }))}
                               data-testid="input-edit-username"
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="edit-bio">Bio</Label>
-                            <Textarea
-                              id="edit-bio"
-                              value={editData.bio}
-                              onChange={(e) => setEditData(prev => ({ ...prev, bio: e.target.value }))}
-                              rows={3}
-                              data-testid="input-edit-bio"
                             />
                           </div>
                           <div className="flex justify-between">

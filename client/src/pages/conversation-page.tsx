@@ -59,10 +59,11 @@ export default function ConversationPage() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setLocation('/inbox')}
+              onClick={() => setLocation('/')}
               data-testid="button-back"
             >
               <ArrowLeft className="w-4 h-4" />
+              <span className="ml-1">Back</span>
             </Button>
             
             <Avatar className="h-10 w-10">

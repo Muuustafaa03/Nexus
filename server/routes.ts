@@ -260,6 +260,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/jobs", async (req, res) => {
+    // For demo purposes, allow job creation
+    try {
+      const storageAny = storage as any;
+      const prisma = storageAny.prisma;
+      
+      if (!prisma) {
+        return res.status(500).json({ message: "Database not available" });
+      }
+      
+      const job = await prisma.job.create({
+        data: {
+          title: req.body.title,
+          company: req.body.company,
+          location: req.body.location,
+          salaryRange: req.body.salaryRange,
+          tags: req.body.tags || [],
+          level: req.body.level,
+          remote: req.body.remote || false,
+          blurb: req.body.blurb,
+          applyUrl: req.body.applyUrl
+        }
+      });
+      res.status(201).json(job);
+    } catch (error) {
+      console.error("Create job error:", error);
+      res.status(500).json({ message: "Failed to create job" });
+    }
+  });
+
   app.post("/api/jobs/:id/save", async (req, res) => {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ message: "Authentication required" });

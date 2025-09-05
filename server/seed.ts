@@ -16,7 +16,7 @@ async function seedDatabase() {
   console.log("Starting database seeding...");
 
   // Create Portal Official account if it doesn't exist
-  const existingOfficial = await storage.getUser(portalOfficialId);
+  const existingOfficial = await storage.getUserByUsername("Portal");
   if (!existingOfficial) {
     console.log("Creating Portal Official account...");
     const hashedPassword = await hashPassword("portal123");
@@ -29,6 +29,8 @@ async function seedDatabase() {
       avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=Portal&backgroundColor=3b82f6"
     });
     console.log("✓ Portal Official account created");
+  } else {
+    console.log("✓ Portal Official account already exists");
   }
 
   // Create sample users
@@ -340,25 +342,42 @@ What's your experience with Kubernetes? What would you do differently?`,
     }
   ];
 
-  // Create jobs using Prisma directly since createJob doesn't exist in storage
+  // Create jobs via storage but manually
   console.log("Creating sample jobs...");
-  const { prisma } = storage as any; // Access prisma instance
-  
-  for (const jobData of jobs) {
-    await prisma.job.create({
-      data: {
-        title: jobData.title,
-        company: jobData.company,
-        location: jobData.location,
-        salaryRange: jobData.salaryRange,
-        tags: jobData.tags,
-        level: jobData.level,
-        remote: jobData.remote,
-        blurb: jobData.blurb,
-        applyUrl: jobData.applyUrl
+  try {
+    // Access prisma through storage instance
+    const storageAny = storage as any;
+    const prisma = storageAny.prisma;
+    
+    if (!prisma) {
+      console.log("❌ Cannot access Prisma instance for jobs");
+      return;
+    }
+    
+    // Check if jobs already exist
+    const existingJobsCount = await prisma.job.count();
+    if (existingJobsCount === 0) {
+      for (const jobData of jobs) {
+        await prisma.job.create({
+          data: {
+            title: jobData.title,
+            company: jobData.company,
+            location: jobData.location,
+            salaryRange: jobData.salaryRange,
+            tags: jobData.tags,
+            level: jobData.level,
+            remote: jobData.remote,
+            blurb: jobData.blurb,
+            applyUrl: jobData.applyUrl
+          }
+        });
+        console.log(`✓ Created job: ${jobData.title} at ${jobData.company}`);
       }
-    });
-    console.log(`✓ Created job: ${jobData.title} at ${jobData.company}`);
+    } else {
+      console.log(`✓ Jobs already exist (${existingJobsCount} jobs in database)`);
+    }
+  } catch (error) {
+    console.error("Error creating jobs:", error.message);
   }
 
   // Create some sample follows between users
