@@ -26,6 +26,11 @@ export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   const { user, loginMutation, registerMutation } = useAuth();
   const [, setLocation] = useLocation();
+  
+  // Registration form state
+  const [regEmail, setRegEmail] = useState("");
+  const [regUsername, setRegUsername] = useState("");
+  const [regPassword, setRegPassword] = useState("");
 
   const loginForm = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -58,10 +63,12 @@ export default function AuthPage() {
     }
   };
 
-  const onRegisterSubmit = async (data: RegisterForm) => {
+  const onRegisterSubmit = async () => {
     try {
       await registerMutation.mutateAsync({
-        ...data,
+        email: regEmail,
+        username: regUsername,
+        password: regPassword,
         bio: undefined,
         avatarUrl: undefined,
       });
@@ -185,6 +192,8 @@ export default function AuthPage() {
                       type="email" 
                       placeholder="Enter your email"
                       autoComplete="email"
+                      value={regEmail}
+                      onChange={(e) => setRegEmail(e.target.value)}
                       data-testid="input-email" 
                     />
                   </div>
@@ -195,6 +204,8 @@ export default function AuthPage() {
                       type="text"
                       placeholder="Choose a username"
                       autoComplete="username"
+                      value={regUsername}
+                      onChange={(e) => setRegUsername(e.target.value)}
                       data-testid="input-register-username" 
                     />
                   </div>
@@ -205,13 +216,16 @@ export default function AuthPage() {
                       type="password" 
                       placeholder="Enter password"
                       autoComplete="new-password"
+                      value={regPassword}
+                      onChange={(e) => setRegPassword(e.target.value)}
                       data-testid="input-register-password" 
                     />
                   </div>
                   <Button 
                     type="button" 
                     className="w-full" 
-                    disabled={registerMutation.isPending}
+                    disabled={registerMutation.isPending || !regEmail || !regUsername || !regPassword}
+                    onClick={onRegisterSubmit}
                     data-testid="button-register"
                   >
                     {registerMutation.isPending ? "Creating account..." : "Create account"}
