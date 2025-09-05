@@ -26,6 +26,7 @@ export interface IStorage {
   getPostsByUser(userId: string, cursor?: string, limit?: number): Promise<Post[]>;
   createPost(authorId: string, post: InsertPost): Promise<Post>;
   updatePost(id: string, updates: Partial<Post>): Promise<Post | undefined>;
+  deletePost(id: string): Promise<void>;
 
   // Interactions
   likePost(userId: string, postId: string): Promise<void>;
@@ -218,6 +219,16 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       return undefined;
     }
+  }
+
+  async deletePost(id: string): Promise<void> {
+    // Delete related data first to maintain referential integrity
+    await prisma.comment.deleteMany({ where: { postId: id } });
+    await prisma.like.deleteMany({ where: { postId: id } });
+    await prisma.save.deleteMany({ where: { postId: id } });
+    
+    // Delete the post itself
+    await prisma.post.delete({ where: { id } });
   }
 
   async likePost(userId: string, postId: string): Promise<void> {

@@ -152,8 +152,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     try {
-      // For demo purposes, just return success
-      // In a real app, you'd check if user owns the post and delete it
+      const postId = req.params.id;
+      const userId = req.user.id;
+      
+      // Check if the post exists and user owns it
+      const post = await storage.getPost(postId);
+      if (!post) {
+        return res.status(404).json({ message: "Post not found" });
+      }
+      
+      if (post.authorId !== userId) {
+        return res.status(403).json({ message: "Not authorized to delete this post" });
+      }
+      
+      // Delete the post
+      await storage.deletePost(postId);
       res.json({ message: "Post deleted" });
     } catch (error) {
       console.error("Delete post error:", error);

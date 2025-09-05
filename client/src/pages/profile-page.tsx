@@ -15,7 +15,6 @@ import { api, type PostWithAuthor } from "@/lib/api";
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<'posts' | 'settings'>('posts');
-  const [showDrafts, setShowDrafts] = useState(false);
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const [, setLocation] = useLocation();
@@ -28,13 +27,11 @@ export default function ProfilePage() {
     enabled: !!user,
   });
 
-  // Filter posts to show only the current user's posts (including drafts)
+  // Filter posts to show only the current user's published posts
   const currentUserPosts = allPosts.filter(post => {
     const isUserPost = post.author.id === user?.id;
-    if (!isUserPost) return false;
-    
-    // If showDrafts is true, show only drafts; otherwise show only published posts
-    return showDrafts ? post.isDraft : !post.isDraft;
+    // Only show published posts
+    return isUserPost && !post.isDraft;
   });
 
   if (!user) {
@@ -100,25 +97,12 @@ export default function ProfilePage() {
       {/* Tab Content */}
       {activeTab === 'posts' ? (
         <div className="space-y-4" data-testid="posts-content">
-          {/* Drafts Toggle */}
+          {/* Posts Header */}
           <Card className="border border-border">
             <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-foreground">
-                  {showDrafts ? 'My Drafts' : 'My Published Posts'}
-                </h3>
-                <div className="flex items-center space-x-2">
-                  <Label htmlFor="drafts-toggle" className="text-sm text-muted-foreground">
-                    Show Drafts
-                  </Label>
-                  <Checkbox
-                    id="drafts-toggle"
-                    checked={showDrafts}
-                    onCheckedChange={(checked) => setShowDrafts(checked === true)}
-                    data-testid="checkbox-drafts-toggle"
-                  />
-                </div>
-              </div>
+              <h3 className="text-lg font-semibold text-foreground">
+                My Published Posts
+              </h3>
             </CardContent>
           </Card>
           

@@ -20,7 +20,7 @@ interface PostCardProps {
 export default function PostCard({ post, onUpdate }: PostCardProps) {
   const [isLiked, setIsLiked] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
-  const [showComments, setShowComments] = useState(false);
+  const [showComments, setShowComments] = useState(true);
   const [showCommentForm, setShowCommentForm] = useState(false);
   const [newComment, setNewComment] = useState("");
   const [isExpanded, setIsExpanded] = useState(false);

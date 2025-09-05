@@ -85,18 +85,7 @@ export default function ConversationPage() {
           }}
         />
       )}
-      {isMobile && (
-        <MobileNav 
-          activeSection="inbox" 
-          onSectionChange={(section) => {
-            if (section === 'home') setLocation('/');
-            else if (section === 'jobs') setLocation('/jobs');
-            else if (section === 'profile') setLocation('/profile');
-            else if (section === 'create') setLocation('/create');
-          }}
-        />
-      )}
-      <main className={`${!isMobile ? 'pt-16' : 'pb-16'} px-4`}>
+      <main className={`${!isMobile ? 'pt-16' : ''} pb-16 px-4`}>
         <div className="max-w-4xl mx-auto h-screen flex flex-col" data-testid="conversation-page">
       {/* Header */}
       <Card className="border-b rounded-none">
@@ -190,6 +179,16 @@ export default function ConversationPage() {
       </Card>
         </div>
       </main>
+      {/* Bottom Navigation - Always Visible */}
+      <MobileNav 
+        activeSection="inbox" 
+        onSectionChange={(section) => {
+          if (section === 'home') setLocation('/');
+          else if (section === 'jobs') setLocation('/jobs');
+          else if (section === 'profile') setLocation('/profile');
+          else if (section === 'create') setLocation('/create');
+        }}
+      />
     </div>
   );
 }
