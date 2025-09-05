@@ -36,8 +36,7 @@ export default function AuthPage() {
   });
 
   const registerForm = useForm<RegisterForm>({
-    resolver: zodResolver(registerSchema),
-    mode: "onChange",
+    mode: "onBlur", 
     defaultValues: {
       email: "",
       username: "",
@@ -178,60 +177,46 @@ export default function AuthPage() {
                   </form>
                 </Form>
               ) : (
-                <Form {...registerForm}>
-                  <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4" data-testid="register-form">
-                    <FormField
-                      control={registerForm.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email</FormLabel>
-                          <FormControl>
-                            <Input type="email" {...field} data-testid="input-email" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="reg-email">Email</Label>
+                    <Input 
+                      id="reg-email"
+                      type="email" 
+                      placeholder="Enter your email"
+                      autoComplete="email"
+                      data-testid="input-email" 
                     />
-
-                    <FormField
-                      control={registerForm.control}
-                      name="username"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Username</FormLabel>
-                          <FormControl>
-                            <Input {...field} data-testid="input-register-username" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                  </div>
+                  <div>
+                    <Label htmlFor="reg-username">Username</Label>
+                    <Input 
+                      id="reg-username"
+                      type="text"
+                      placeholder="Choose a username"
+                      autoComplete="username"
+                      data-testid="input-register-username" 
                     />
-
-                    <FormField
-                      control={registerForm.control}
-                      name="password"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Password</FormLabel>
-                          <FormControl>
-                            <Input type="password" {...field} data-testid="input-register-password" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                  </div>
+                  <div>
+                    <Label htmlFor="reg-password">Password</Label>
+                    <Input 
+                      id="reg-password"
+                      type="password" 
+                      placeholder="Enter password"
+                      autoComplete="new-password"
+                      data-testid="input-register-password" 
                     />
-
-                    <Button 
-                      type="submit" 
-                      className="w-full" 
-                      disabled={registerMutation.isPending}
-                      data-testid="button-register"
-                    >
-                      {registerMutation.isPending ? "Creating account..." : "Create account"}
-                    </Button>
-                  </form>
-                </Form>
+                  </div>
+                  <Button 
+                    type="button" 
+                    className="w-full" 
+                    disabled={registerMutation.isPending}
+                    data-testid="button-register"
+                  >
+                    {registerMutation.isPending ? "Creating account..." : "Create account"}
+                  </Button>
+                </div>
               )}
 
               <div className="text-center" data-testid="auth-switch">
