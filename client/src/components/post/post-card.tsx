@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { api, type PostWithAuthor } from "@/lib/api";
 import { formatDistanceToNow } from "date-fns";
@@ -16,7 +17,35 @@ interface PostCardProps {
 export default function PostCard({ post, onUpdate }: PostCardProps) {
   const [isLiked, setIsLiked] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+  const [newComment, setNewComment] = useState("");
   const { toast } = useToast();
+
+  const { data: comments = [], refetch: refetchComments } = useQuery({
+    queryKey: ['/api/posts', post.id, 'comments'],
+    queryFn: () => api.getComments(post.id),
+    enabled: showComments,
+  });
+
+  const commentMutation = useMutation({
+    mutationFn: (body: string) => api.addComment(post.id, { body }),
+    onSuccess: () => {
+      setNewComment("");
+      refetchComments();
+      onUpdate();
+      toast({
+        title: "Comment added",
+        description: "Your comment has been posted!",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to add comment",
+        variant: "destructive",
+      });
+    },
+  });
 
   const likeMutation = useMutation({
     mutationFn: () => isLiked ? api.unlikePost(post.id) : api.likePost(post.id),
@@ -155,6 +184,7 @@ export default function PostCard({ post, onUpdate }: PostCardProps) {
               <Button
                 variant="ghost"
                 size="sm"
+                onClick={() => setShowComments(!showComments)}
                 className="flex items-center space-x-2 text-muted-foreground hover:text-foreground"
                 data-testid="button-comment"
               >
@@ -198,6 +228,67 @@ export default function PostCard({ post, onUpdate }: PostCardProps) {
             </div>
           </div>
         </div>
+
+        {/* Comments Section */}
+        {showComments && (
+          <div className="border-t pt-4 mt-4 space-y-4" data-testid="comments-section">
+            {/* Add Comment Form */}
+            <div className="flex space-x-3">
+              <Avatar className="h-8 w-8">
+                <AvatarFallback>You</AvatarFallback>
+              </Avatar>
+              <div className="flex-1 flex space-x-2">
+                <Input
+                  placeholder="Write a comment..."
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && newComment.trim()) {
+                      commentMutation.mutate(newComment.trim());
+                    }
+                  }}
+                  data-testid="input-comment"
+                />
+                <Button
+                  size="sm"
+                  onClick={() => newComment.trim() && commentMutation.mutate(newComment.trim())}
+                  disabled={commentMutation.isPending || !newComment.trim()}
+                  data-testid="button-post-comment"
+                >
+                  {commentMutation.isPending ? "..." : "Post"}
+                </Button>
+              </div>
+            </div>
+
+            {/* Comments List */}
+            <div className="space-y-3" data-testid="comments-list">
+              {comments.map((comment: any) => (
+                <div key={comment.id} className="flex space-x-3">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={comment.author?.avatarUrl} alt={comment.author?.username} />
+                    <AvatarFallback>{comment.author?.username?.[0]?.toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <div className="bg-muted rounded-lg p-3">
+                      <div className="flex items-center space-x-2 mb-1">
+                        <span className="font-medium text-sm">{comment.author?.username}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
+                        </span>
+                      </div>
+                      <p className="text-sm">{comment.body}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {comments.length === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  No comments yet. Be the first to comment!
+                </p>
+              )}
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

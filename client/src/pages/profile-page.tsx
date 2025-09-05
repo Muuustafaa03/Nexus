@@ -3,6 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import ProfileHeader from "@/components/profile/profile-header";
 import PostCard from "@/components/post/post-card";
 import { api, type PostWithAuthor } from "@/lib/api";
@@ -104,9 +106,23 @@ export default function ProfilePage() {
               
               <div>
                 <h3 className="text-sm font-medium text-foreground mb-2">Privacy & Security</h3>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground mb-4">
                   Manage your privacy settings and account security preferences.
                 </p>
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="privacy-profile" 
+                    defaultChecked={false}
+                    data-testid="checkbox-privacy-profile"
+                  />
+                  <Label 
+                    htmlFor="privacy-profile" 
+                    className="text-sm font-normal"
+                    data-testid="label-privacy-profile"
+                  >
+                    Make my profile private (only followers can see my posts)
+                  </Label>
+                </div>
               </div>
               
               <div>

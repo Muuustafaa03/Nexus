@@ -19,10 +19,32 @@ export default function HomePage() {
   const [feedSort, setFeedSort] = useState<'trending' | 'recent'>('trending');
   const isMobile = useIsMobile();
 
+  const [hasMorePosts, setHasMorePosts] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+
   const { data: posts = [], isLoading, refetch } = useQuery<PostWithAuthor[]>({
     queryKey: ['/api/posts', feedSort],
     queryFn: () => api.getPosts(feedSort),
   });
+
+  const loadMorePosts = async () => {
+    if (isLoadingMore || !hasMorePosts) return;
+    
+    setIsLoadingMore(true);
+    try {
+      // For demo purposes, just refetch current posts
+      // In a real app, you'd implement cursor-based pagination
+      await refetch();
+      // Simulate pagination - after 2 loads, no more posts
+      if (posts.length > 10) {
+        setHasMorePosts(false);
+      }
+    } catch (error) {
+      console.error('Failed to load more posts:', error);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  };
 
   const renderActiveSection = () => {
     switch (activeSection) {
@@ -110,11 +132,18 @@ export default function HomePage() {
             ))}
             
             {/* Load More Button */}
-            <div className="text-center py-8" data-testid="load-more-container">
-              <Button variant="secondary" data-testid="button-load-more">
-                Load more posts
-              </Button>
-            </div>
+            {hasMorePosts && (
+              <div className="text-center py-8" data-testid="load-more-container">
+                <Button 
+                  variant="secondary" 
+                  onClick={loadMorePosts}
+                  disabled={isLoadingMore}
+                  data-testid="button-load-more"
+                >
+                  {isLoadingMore ? "Loading..." : "Load more posts"}
+                </Button>
+              </div>
+            )}
           </>
         )}
       </div>

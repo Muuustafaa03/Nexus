@@ -12,8 +12,10 @@ export default function JobsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [levelFilter, setLevelFilter] = useState<string>("");
   const [locationFilter, setLocationFilter] = useState<string>("");
+  const [hasMoreJobs, setHasMoreJobs] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  const { data: jobs = [], isLoading } = useQuery<Job[]>({
+  const { data: jobs = [], isLoading, refetch } = useQuery<Job[]>({
     queryKey: ['/api/jobs', searchQuery, levelFilter, locationFilter],
     queryFn: () => api.getJobs({
       query: searchQuery || undefined,
@@ -21,6 +23,24 @@ export default function JobsPage() {
       remote: locationFilter === 'remote' ? true : locationFilter === 'onsite' ? false : undefined,
     }),
   });
+
+  const loadMoreJobs = async () => {
+    if (isLoadingMore || !hasMoreJobs) return;
+    
+    setIsLoadingMore(true);
+    try {
+      // For demo purposes, just refetch current jobs
+      await refetch();
+      // Simulate pagination - after 2 loads, no more jobs
+      if (jobs.length > 8) {
+        setHasMoreJobs(false);
+      }
+    } catch (error) {
+      console.error('Failed to load more jobs:', error);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  };
 
   return (
     <div className="space-y-6" data-testid="jobs-page">
@@ -151,11 +171,18 @@ export default function JobsPage() {
           </div>
 
           {/* Load More Jobs */}
-          <div className="text-center py-8" data-testid="load-more-jobs">
-            <Button variant="secondary" data-testid="button-load-more-jobs">
-              Load more jobs
-            </Button>
-          </div>
+          {hasMoreJobs && (
+            <div className="text-center py-8" data-testid="load-more-jobs">
+              <Button 
+                variant="secondary" 
+                onClick={loadMoreJobs}
+                disabled={isLoadingMore}
+                data-testid="button-load-more-jobs"
+              >
+                {isLoadingMore ? "Loading..." : "Load more jobs"}
+              </Button>
+            </div>
+          )}
         </>
       )}
     </div>

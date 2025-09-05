@@ -114,6 +114,12 @@ export const api = {
 
   saveJob: (id: string) => apiRequest("POST", `/api/jobs/${id}/save`),
 
+  // Comments
+  getComments: (postId: string) => 
+    fetch(`/api/posts/${postId}/comments`).then(r => r.json()),
+  addComment: (postId: string, comment: { body: string }) =>
+    apiRequest("POST", `/api/posts/${postId}/comment`, comment),
+
   // Social
   followUser: (id: string) => apiRequest("POST", `/api/users/${id}/follow`),
   unfollowUser: (id: string) => apiRequest("DELETE", `/api/users/${id}/follow`),

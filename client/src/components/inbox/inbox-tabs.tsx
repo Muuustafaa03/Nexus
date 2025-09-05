@@ -22,6 +22,35 @@ export default function InboxTabs() {
     queryFn: () => api.getMessageThreads(),
   });
 
+  // Add hardcoded Portal Official conversation for demo
+  const portalOfficialThread = {
+    id: 'portal-official-thread',
+    otherUser: {
+      id: 'portal-official',
+      username: 'portal',
+      email: 'portal@portal.com',
+      bio: 'Official Portal account - Welcome to the community!',
+      avatarUrl: null,
+      isVerified: true,
+    },
+    lastMessage: {
+      id: 'portal-msg-1',
+      body: 'Welcome to Portal! We\'re excited to have you join our professional community.',
+      createdAt: new Date(Date.now() - 60000 * 30), // 30 minutes ago
+      senderId: 'portal-official',
+      threadId: 'portal-official-thread'
+    },
+    unreadForUserA: 1,
+    unreadForUserB: 0,
+    userAId: 'current-user',
+    userBId: 'portal-official',
+    createdAt: new Date(Date.now() - 60000 * 30),
+    updatedAt: new Date(Date.now() - 60000 * 30)
+  };
+
+  // Combine hardcoded thread with real threads
+  const allThreads = [portalOfficialThread, ...messageThreads];
+
   const markAsReadMutation = useMutation({
     mutationFn: (id?: string) => api.markNotificationAsRead(id),
     onSuccess: () => {
@@ -34,7 +63,7 @@ export default function InboxTabs() {
   });
 
   const unreadNotifications = notifications.filter(n => !n.isRead);
-  const unreadMessages = messageThreads.reduce((sum, thread) => {
+  const unreadMessages = allThreads.reduce((sum, thread) => {
     // Calculate unread count for current user
     return sum + (thread.unreadForUserA || thread.unreadForUserB || 0);
   }, 0);
@@ -216,12 +245,9 @@ export default function InboxTabs() {
             <div data-testid="messages-content">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-medium text-foreground">Conversations</h2>
-                <Button variant="link" size="sm" data-testid="button-new-message">
-                  New Message
-                </Button>
               </div>
               
-              {messageThreads.length === 0 ? (
+              {allThreads.length === 0 ? (
                 <div className="text-center py-8" data-testid="empty-messages">
                   <p className="text-muted-foreground">No messages yet</p>
                   <p className="text-sm text-muted-foreground mt-2">
@@ -230,7 +256,7 @@ export default function InboxTabs() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {messageThreads.map((thread) => {
+                  {allThreads.map((thread) => {
                     const hasUnread = (thread.unreadForUserA || thread.unreadForUserB || 0) > 0;
                     return (
                       <div
@@ -248,9 +274,21 @@ export default function InboxTabs() {
                         </Avatar>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between">
-                            <p className="font-medium text-foreground" data-testid="thread-username">
-                              @{thread.otherUser.username}
-                            </p>
+                            <div className="flex items-center space-x-1">
+                              <p className="font-medium text-foreground" data-testid="thread-username">
+                                @{thread.otherUser.username}
+                              </p>
+                              {thread.otherUser.isVerified && (
+                                <svg 
+                                  className="w-4 h-4 text-blue-500" 
+                                  fill="currentColor" 
+                                  viewBox="0 0 24 24"
+                                  data-testid="verified-badge"
+                                >
+                                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                              )}
+                            </div>
                             <span className="text-xs text-muted-foreground" data-testid="thread-time">
                               {formatDistanceToNow(new Date(thread.updatedAt), { addSuffix: true })}
                             </span>

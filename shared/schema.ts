@@ -13,10 +13,24 @@ export const insertPostSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().optional(),
   body: z.string().min(1, "Content is required"),
-  tags: z.array(z.string()).default([]),
-  category: z.string().min(1, "Category is required"),
+  tags: z.union([z.array(z.string()), z.string()]).default([]).transform((val) => {
+    if (typeof val === 'string') {
+      return val.trim() ? val.split(',').map(t => t.trim()).filter(Boolean) : [];
+    }
+    return val;
+  }),
+  category: z.string().optional(),
   sponsored: z.boolean().default(false),
   isDraft: z.boolean().default(false),
+}).refine((data) => {
+  // Only require title, body, and category for published posts (not drafts)
+  if (!data.isDraft) {
+    return data.title.trim().length > 0 && data.body.trim().length > 0 && data.category && data.category.length > 0;
+  }
+  return true;
+}, {
+  message: "Title, content, and category are required for published posts",
+  path: ["category"]
 });
 
 export const insertJobSchema = z.object({

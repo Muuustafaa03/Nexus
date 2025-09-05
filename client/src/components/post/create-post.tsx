@@ -40,10 +40,7 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
 
   const createPostMutation = useMutation({
     mutationFn: async (data: CreatePostForm) => {
-      const response = await api.createPost({
-        ...data,
-        tags: typeof data.tags === 'string' ? data.tags.split(',').map(t => t.trim()) : data.tags,
-      });
+      const response = await api.createPost(data);
       return response.json();
     },
     onSuccess: () => {
@@ -248,14 +245,14 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
                     <FormControl>
                       <Input 
                         {...field} 
-                        value={Array.isArray(field.value) ? field.value.join(', ') : field.value}
+                        value={Array.isArray(field.value) ? field.value.join(', ') : field.value || ''}
                         onChange={(e) => field.onChange(e.target.value)}
-                        placeholder="e.g. javascript, react, web-dev"
+                        placeholder="e.g. javascript, react, web-dev (optional)"
                         data-testid="input-post-tags"
                       />
                     </FormControl>
                     <FormMessage />
-                    <p className="text-xs text-muted-foreground">Separate tags with commas</p>
+                    <p className="text-xs text-muted-foreground">Separate tags with commas (optional)</p>
                   </FormItem>
                 )}
               />
@@ -264,11 +261,11 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
                 name="category"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Category</FormLabel>
+                    <FormLabel>Category {!form.getValues('isDraft') && '*'}</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger data-testid="select-post-category">
-                          <SelectValue placeholder="Select a category" />
+                          <SelectValue placeholder={form.getValues('isDraft') ? "Select a category (optional for drafts)" : "Select a category"} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
