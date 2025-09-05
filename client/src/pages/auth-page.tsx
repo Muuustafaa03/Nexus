@@ -39,6 +39,8 @@ export default function AuthPage() {
       email: "",
       username: "",
       password: "",
+      bio: "",
+      avatarUrl: "",
     },
   });
 
