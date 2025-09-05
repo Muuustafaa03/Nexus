@@ -17,8 +17,10 @@ const loginSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
+const registerSchema = insertUserSchema.omit({ bio: true, avatarUrl: true });
+
 type LoginForm = z.infer<typeof loginSchema>;
-type RegisterForm = z.infer<typeof insertUserSchema>;
+type RegisterForm = z.infer<typeof registerSchema>;
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -34,13 +36,12 @@ export default function AuthPage() {
   });
 
   const registerForm = useForm<RegisterForm>({
-    resolver: zodResolver(insertUserSchema),
+    resolver: zodResolver(registerSchema),
+    mode: "onChange",
     defaultValues: {
       email: "",
       username: "",
       password: "",
-      bio: "",
-      avatarUrl: "",
     },
   });
 
@@ -60,7 +61,11 @@ export default function AuthPage() {
 
   const onRegisterSubmit = async (data: RegisterForm) => {
     try {
-      await registerMutation.mutateAsync(data);
+      await registerMutation.mutateAsync({
+        ...data,
+        bio: undefined,
+        avatarUrl: undefined,
+      });
       setLocation("/");
     } catch (error) {
       // Error handling is done in the mutation
@@ -76,7 +81,7 @@ export default function AuthPage() {
             {/* Portal Logo */}
             <div className="w-24 h-24 mx-auto mb-4 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm" data-testid="portal-logo">
               <svg className="w-12 h-12" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
               </svg>
             </div>
             <h1 className="text-4xl font-bold mb-2">Portal</h1>
@@ -114,7 +119,7 @@ export default function AuthPage() {
           <div className="text-center lg:hidden" data-testid="mobile-logo">
             <div className="w-16 h-16 mx-auto mb-4 bg-primary rounded-xl flex items-center justify-center">
               <svg className="w-8 h-8 text-primary-foreground" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
               </svg>
             </div>
             <h1 className="text-2xl font-bold text-foreground">Portal</h1>
