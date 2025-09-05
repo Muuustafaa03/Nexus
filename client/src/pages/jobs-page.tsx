@@ -1,14 +1,20 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import JobFlipCard from "@/components/job/job-flip-card";
+import DesktopHeader from "@/components/layout/desktop-header";
+import MobileNav from "@/components/layout/mobile-nav";
 import { api, type Job } from "@/lib/api";
 
 export default function JobsPage() {
+  const isMobile = useIsMobile();
+  const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [levelFilter, setLevelFilter] = useState<string>("");
   const [locationFilter, setLocationFilter] = useState<string>("");
@@ -43,7 +49,31 @@ export default function JobsPage() {
   };
 
   return (
-    <div className="space-y-6" data-testid="jobs-page">
+    <div className="min-h-screen bg-background">
+      {!isMobile && (
+        <DesktopHeader 
+          activeSection="jobs" 
+          onSectionChange={(section) => {
+            if (section === 'home') setLocation('/');
+            else if (section === 'inbox') setLocation('/inbox');
+            else if (section === 'profile') setLocation('/profile');
+            else if (section === 'create') setLocation('/create');
+          }}
+        />
+      )}
+      {isMobile && (
+        <MobileNav 
+          activeSection="jobs" 
+          onSectionChange={(section) => {
+            if (section === 'home') setLocation('/');
+            else if (section === 'inbox') setLocation('/inbox');
+            else if (section === 'profile') setLocation('/profile');
+            else if (section === 'create') setLocation('/create');
+          }}
+        />
+      )}
+      <main className={`${!isMobile ? 'pt-16' : 'pb-16'} px-4`}>
+        <div className="max-w-4xl mx-auto space-y-6" data-testid="jobs-page">
       {/* Jobs Header */}
       <Card className="border border-border" data-testid="jobs-header">
         <CardContent className="p-6">
@@ -185,6 +215,8 @@ export default function JobsPage() {
           )}
         </>
       )}
+        </div>
+      </main>
     </div>
   );
 }

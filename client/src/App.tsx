@@ -12,6 +12,7 @@ import JobsPage from "@/pages/jobs-page";
 import InboxPage from "@/pages/inbox-page";
 import ProfilePage from "@/pages/profile-page";
 import ConversationPage from "@/pages/conversation-page";
+import CreatePage from "@/pages/create-page";
 
 function Router() {
   return (
@@ -21,6 +22,7 @@ function Router() {
       <ProtectedRoute path="/inbox" component={InboxPage} />
       <ProtectedRoute path="/profile" component={ProfilePage} />
       <ProtectedRoute path="/conversation" component={ConversationPage} />
+      <ProtectedRoute path="/create" component={CreatePage} />
       <Route path="/auth" component={AuthPage} />
       <Route component={NotFound} />
     </Switch>

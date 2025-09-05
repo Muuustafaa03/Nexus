@@ -146,6 +146,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete("/api/posts/:id", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
+    try {
+      // For demo purposes, just return success
+      // In a real app, you'd check if user owns the post and delete it
+      res.json({ message: "Post deleted" });
+    } catch (error) {
+      console.error("Delete post error:", error);
+      res.status(500).json({ message: "Failed to delete post" });
+    }
+  });
+
   app.delete("/api/posts/:id/save", async (req, res) => {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ message: "Authentication required" });

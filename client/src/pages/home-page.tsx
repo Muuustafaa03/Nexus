@@ -56,6 +56,18 @@ export default function HomePage() {
           }}
         />
       )}
+      {isMobile && (
+        <MobileNav 
+          activeSection="home" 
+          onSectionChange={(section) => {
+            if (section === 'jobs') setLocation('/jobs');
+            else if (section === 'inbox') setLocation('/inbox');
+            else if (section === 'profile') setLocation('/profile');
+            else if (section === 'create') setLocation('/create');
+            else if (section === 'home') setLocation('/');
+          }}
+        />
+      )}
       <main className={`${!isMobile ? 'pt-16' : 'pb-16'} px-4`}>
         <div className="max-w-4xl mx-auto space-y-6" data-testid="home-section">
           {/* Feed Header */}

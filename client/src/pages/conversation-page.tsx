@@ -1,15 +1,20 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArrowLeft, Send } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import DesktopHeader from "@/components/layout/desktop-header";
+import MobileNav from "@/components/layout/mobile-nav";
 
 export default function ConversationPage() {
+  const isMobile = useIsMobile();
   const [, setLocation] = useLocation();
   const [newMessage, setNewMessage] = useState("");
+  const [messages, setMessages] = useState<any[]>([]);
 
   // For demo purposes, hardcoded Portal Official conversation
   const conversation = {
@@ -43,15 +48,49 @@ export default function ConversationPage() {
   const handleSendMessage = () => {
     if (!newMessage.trim()) return;
     
-    // For demo purposes, just clear the input
+    // Add the message to the local state for immediate display
+    const newMsg = {
+      id: `user-msg-${Date.now()}`,
+      body: newMessage,
+      createdAt: new Date(),
+      senderId: 'current-user',
+      senderUsername: 'you'
+    };
+    setMessages(prev => [...prev, newMsg]);
     setNewMessage("");
     
-    // In a real app, you would send the message to the backend
-    console.log("Sending message:", newMessage);
+    console.log("Message sent:", newMessage);
   };
 
+  // Combine demo messages with user messages
+  const allMessages = [...conversation.messages, ...messages];
+
   return (
-    <div className="max-w-4xl mx-auto h-screen flex flex-col" data-testid="conversation-page">
+    <div className="min-h-screen bg-background">
+      {!isMobile && (
+        <DesktopHeader 
+          activeSection="inbox" 
+          onSectionChange={(section) => {
+            if (section === 'home') setLocation('/');
+            else if (section === 'jobs') setLocation('/jobs');
+            else if (section === 'profile') setLocation('/profile');
+            else if (section === 'create') setLocation('/create');
+          }}
+        />
+      )}
+      {isMobile && (
+        <MobileNav 
+          activeSection="inbox" 
+          onSectionChange={(section) => {
+            if (section === 'home') setLocation('/');
+            else if (section === 'jobs') setLocation('/jobs');
+            else if (section === 'profile') setLocation('/profile');
+            else if (section === 'create') setLocation('/create');
+          }}
+        />
+      )}
+      <main className={`${!isMobile ? 'pt-16' : 'pb-16'} px-4`}>
+        <div className="max-w-4xl mx-auto h-screen flex flex-col" data-testid="conversation-page">
       {/* Header */}
       <Card className="border-b rounded-none">
         <CardContent className="p-4">
@@ -59,7 +98,7 @@ export default function ConversationPage() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setLocation('/')}
+              onClick={() => setLocation('/inbox')}
               data-testid="button-back"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -97,7 +136,7 @@ export default function ConversationPage() {
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4" data-testid="messages-container">
-        {conversation.messages.map((message) => (
+        {allMessages.map((message) => (
           <div 
             key={message.id} 
             className={`flex ${message.senderId === 'current-user' ? 'justify-end' : 'justify-start'}`}
@@ -142,6 +181,8 @@ export default function ConversationPage() {
           </div>
         </CardContent>
       </Card>
+        </div>
+      </main>
     </div>
   );
 }

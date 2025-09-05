@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 import { api, type PostWithAuthor } from "@/lib/api";
 import { formatDistanceToNow } from "date-fns";
 import { queryClient } from "@/lib/queryClient";
@@ -19,9 +21,13 @@ export default function PostCard({ post, onUpdate }: PostCardProps) {
   const [isLiked, setIsLiked] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [showComments, setShowComments] = useState(false);
+  const [showCommentForm, setShowCommentForm] = useState(false);
   const [newComment, setNewComment] = useState("");
   const [isExpanded, setIsExpanded] = useState(false);
   const { toast } = useToast();
+  const { user: currentUser } = useAuth();
+  
+  const isOwner = currentUser?.id === post.author.id;
 
   const { data: comments = [], refetch: refetchComments } = useQuery({
     queryKey: ['/api/posts', post.id, 'comments'],
@@ -86,6 +92,24 @@ export default function PostCard({ post, onUpdate }: PostCardProps) {
       toast({
         title: "Error", 
         description: `Failed to ${isSaved ? 'unsave' : 'save'} post`,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deletePostMutation = useMutation({
+    mutationFn: () => api.deletePost(post.id),
+    onSuccess: () => {
+      toast({
+        title: "Post deleted",
+        description: "Your post has been deleted successfully.",
+      });
+      onUpdate();
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete post",
         variant: "destructive",
       });
     },
@@ -207,7 +231,7 @@ export default function PostCard({ post, onUpdate }: PostCardProps) {
                 size="sm"
                 onClick={() => setShowComments(!showComments)}
                 className="flex items-center space-x-2 text-muted-foreground hover:text-foreground"
-                data-testid="button-comment"
+                data-testid="button-view-comments"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -215,6 +239,19 @@ export default function PostCard({ post, onUpdate }: PostCardProps) {
                 <span className="text-sm" data-testid="text-comments-count">
                   {showComments ? 'Hide Comments' : `View Comments (${post.commentsCount})`}
                 </span>
+              </Button>
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowCommentForm(!showCommentForm)}
+                className="flex items-center space-x-2 text-muted-foreground hover:text-foreground"
+                data-testid="button-comment"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                <span className="text-sm">Comment</span>
               </Button>
               
               <Button
@@ -248,14 +285,48 @@ export default function PostCard({ post, onUpdate }: PostCardProps) {
                 </svg>
                 <span className="text-sm" data-testid="text-shares-count">{post.sharesCount}</span>
               </Button>
+              
+              {isOwner && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="flex items-center space-x-2 text-muted-foreground hover:text-destructive"
+                      data-testid="button-delete"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                      <span className="text-sm">Delete</span>
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Post</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to delete this post? This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => deletePostMutation.mutate()}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Comments Section */}
-        {showComments && (
-          <div className="border-t pt-4 mt-4 space-y-4" data-testid="comments-section">
-            {/* Add Comment Form */}
+        {/* Comment Form */}
+        {showCommentForm && (
+          <div className="border-t pt-4 mt-4" data-testid="comment-form-section">
             <div className="flex space-x-3">
               <Avatar className="h-8 w-8">
                 <AvatarFallback>You</AvatarFallback>
@@ -282,6 +353,12 @@ export default function PostCard({ post, onUpdate }: PostCardProps) {
                 </Button>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Comments Section */}
+        {showComments && (
+          <div className="border-t pt-4 mt-4 space-y-4" data-testid="comments-section">
 
             {/* Comments List */}
             <div className="space-y-3" data-testid="comments-list">

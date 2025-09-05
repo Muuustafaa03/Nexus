@@ -1,0 +1,41 @@
+[
+  {
+    "id": "job-1",
+    "title": "Senior Frontend Developer",
+    "company": "TechCorp",
+    "location": "Remote",
+    "salaryRange": "$120,000 - $160,000",
+    "tags": ["React", "TypeScript", "Next.js"],
+    "level": "Senior",
+    "remote": true,
+    "blurb": "Join our team to build amazing user experiences with cutting-edge technology",
+    "applyUrl": "https://techcorp.com/jobs/senior-frontend",
+    "postedAt": "2024-01-15T10:00:00Z"
+  },
+  {
+    "id": "job-2", 
+    "title": "Product Manager",
+    "company": "StartupXYZ",
+    "location": "San Francisco, CA",
+    "salaryRange": "$140,000 - $180,000",
+    "tags": ["Product Strategy", "Analytics", "Leadership"],
+    "level": "Mid Level",
+    "remote": false,
+    "blurb": "Drive product vision and strategy for our growing SaaS platform",
+    "applyUrl": "https://startupxyz.com/jobs/pm",
+    "postedAt": "2024-01-14T14:30:00Z"
+  },
+  {
+    "id": "job-3",
+    "title": "DevOps Engineer", 
+    "company": "CloudTech",
+    "location": "Austin, TX",
+    "salaryRange": "$110,000 - $150,000",
+    "tags": ["AWS", "Kubernetes", "Docker"],
+    "level": "Mid Level",
+    "remote": true,
+    "blurb": "Scale our infrastructure to support millions of users",
+    "applyUrl": "https://cloudtech.com/careers/devops",
+    "postedAt": "2024-01-13T09:15:00Z"
+  }
+]
