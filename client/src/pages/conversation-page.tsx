@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { usePortalMessageStatus } from "@/hooks/use-portal-message-status";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +16,12 @@ export default function ConversationPage() {
   const [, setLocation] = useLocation();
   const [newMessage, setNewMessage] = useState("");
   const [messages, setMessages] = useState<any[]>([]);
+  const { markAsRead } = usePortalMessageStatus();
+
+  // Mark Portal message as read when user visits the conversation
+  useEffect(() => {
+    markAsRead();
+  }, [markAsRead]);
 
   // For demo purposes, hardcoded Portal Official conversation
   const conversation = {

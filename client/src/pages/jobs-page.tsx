@@ -72,7 +72,7 @@ export default function JobsPage() {
           }}
         />
       )}
-      <main className={`${!isMobile ? 'pt-16' : 'pb-16'} px-4`}>
+      <main className={`${!isMobile ? 'pt-16' : ''} pb-16 px-4`}>
         <div className="max-w-4xl mx-auto space-y-6" data-testid="jobs-page">
       {/* Jobs Header */}
       <Card className="border border-border" data-testid="jobs-header">
@@ -217,6 +217,16 @@ export default function JobsPage() {
       )}
         </div>
       </main>
+      {/* Bottom Navigation - Always Visible */}
+      <MobileNav 
+        activeSection="jobs" 
+        onSectionChange={(section) => {
+          if (section === 'home') setLocation('/');
+          else if (section === 'inbox') setLocation('/inbox');
+          else if (section === 'profile') setLocation('/profile');
+          else if (section === 'create') setLocation('/create');
+        }}
+      />
     </div>
   );
 }

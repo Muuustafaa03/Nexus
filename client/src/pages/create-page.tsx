@@ -26,18 +26,7 @@ export default function CreatePage({ onPostCreated }: CreatePageProps) {
           }}
         />
       )}
-      {isMobile && (
-        <MobileNav 
-          activeSection="create" 
-          onSectionChange={(section) => {
-            if (section === 'jobs') setLocation('/jobs');
-            else if (section === 'inbox') setLocation('/inbox');
-            else if (section === 'profile') setLocation('/profile');
-            else if (section === 'home') setLocation('/');
-          }}
-        />
-      )}
-      <main className={`${!isMobile ? 'pt-16' : 'pb-16'} px-4`}>
+      <main className={`${!isMobile ? 'pt-16' : ''} pb-16 px-4`}>
         <div className="max-w-4xl mx-auto space-y-6" data-testid="create-page">
       {/* Create Header */}
       <Card className="border border-border" data-testid="create-header">
@@ -53,6 +42,16 @@ export default function CreatePage({ onPostCreated }: CreatePageProps) {
           <CreatePost onPostCreated={onPostCreated} />
         </div>
       </main>
+      {/* Bottom Navigation - Always Visible */}
+      <MobileNav 
+        activeSection="create" 
+        onSectionChange={(section) => {
+          if (section === 'jobs') setLocation('/jobs');
+          else if (section === 'inbox') setLocation('/inbox');
+          else if (section === 'profile') setLocation('/profile');
+          else if (section === 'home') setLocation('/');
+        }}
+      />
     </div>
   );
 }

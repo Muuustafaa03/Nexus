@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useUnreadCount } from "@/hooks/use-unread-count";
 
 interface MobileNavProps {
   activeSection: 'home' | 'jobs' | 'create' | 'inbox' | 'profile';
@@ -7,11 +8,13 @@ interface MobileNavProps {
 }
 
 export default function MobileNav({ activeSection, onSectionChange }: MobileNavProps) {
+  const { totalUnreadCount } = useUnreadCount();
+  
   const navItems = [
     { id: 'home' as const, label: 'Home', icon: '🏠' },
     { id: 'jobs' as const, label: 'Jobs', icon: '💼' },
     { id: 'create' as const, label: 'Create', icon: '➕' },
-    { id: 'inbox' as const, label: 'Inbox', icon: '📧', badge: 2 },
+    { id: 'inbox' as const, label: 'Inbox', icon: '📧', badge: totalUnreadCount > 0 ? totalUnreadCount : undefined },
     { id: 'profile' as const, label: 'Profile', icon: '👤' },
   ];
 

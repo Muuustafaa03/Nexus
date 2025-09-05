@@ -147,21 +147,57 @@ export default function PostCard({ post, onUpdate }: PostCardProps) {
           
           <div className="flex-1 min-w-0">
             {/* Header */}
-            <div className="flex items-center space-x-2 mb-2" data-testid="post-header">
-              <span className="font-medium text-foreground" data-testid="text-author-username">
-                @{post.author.username}
-              </span>
-              <span className="text-sm text-muted-foreground" data-testid="text-post-time">
-                {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
-              </span>
-              {post.sponsored && (
-                <Badge variant="secondary" className="bg-amber-100 text-amber-800" data-testid="badge-sponsored">
-                  Sponsored
+            <div className="flex items-center justify-between mb-2" data-testid="post-header">
+              <div className="flex items-center space-x-2">
+                <span className="font-medium text-foreground" data-testid="text-author-username">
+                  @{post.author.username}
+                </span>
+                <span className="text-sm text-muted-foreground" data-testid="text-post-time">
+                  {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
+                </span>
+                {post.sponsored && (
+                  <Badge variant="secondary" className="bg-amber-100 text-amber-800" data-testid="badge-sponsored">
+                    Sponsored
+                  </Badge>
+                )}
+                <Badge variant="outline" data-testid={`badge-category-${post.category.toLowerCase()}`}>
+                  {post.category}
                 </Badge>
+              </div>
+              {/* Delete Button - Top Right */}
+              {isOwner && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                      data-testid="button-delete"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Post</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to delete this post? This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => deletePostMutation.mutate()}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               )}
-              <Badge variant="outline" data-testid={`badge-category-${post.category.toLowerCase()}`}>
-                {post.category}
-              </Badge>
             </div>
             
             {/* Content */}
@@ -202,6 +238,38 @@ export default function PostCard({ post, onUpdate }: PostCardProps) {
                     {tag}
                   </Badge>
                 ))}
+              </div>
+            )}
+
+            {/* Comments Section - Below Post Body */}
+            {showComments && (
+              <div className="border-t pt-4 mt-4 space-y-4" data-testid="comments-section">
+                <div className="space-y-3" data-testid="comments-list">
+                  {comments.map((comment: any) => (
+                    <div key={comment.id} className="flex space-x-3">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={comment.author?.avatarUrl} alt={comment.author?.username} />
+                        <AvatarFallback>{comment.author?.username?.[0]?.toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <div className="bg-muted rounded-lg p-3">
+                          <div className="flex items-center space-x-2 mb-1">
+                            <span className="font-medium text-sm">{comment.author?.username}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
+                            </span>
+                          </div>
+                          <p className="text-sm">{comment.body}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {comments.length === 0 && (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      No comments yet. Be the first to comment!
+                    </p>
+                  )}
+                </div>
               </div>
             )}
 
@@ -286,40 +354,6 @@ export default function PostCard({ post, onUpdate }: PostCardProps) {
                 <span className="text-sm" data-testid="text-shares-count">{post.sharesCount}</span>
               </Button>
               
-              {isOwner && (
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="flex items-center space-x-2 text-muted-foreground hover:text-destructive"
-                      data-testid="button-delete"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                      <span className="text-sm">Delete</span>
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Delete Post</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Are you sure you want to delete this post? This action cannot be undone.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={() => deletePostMutation.mutate()}
-                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                      >
-                        Delete
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              )}
             </div>
           </div>
         </div>
@@ -356,39 +390,6 @@ export default function PostCard({ post, onUpdate }: PostCardProps) {
           </div>
         )}
 
-        {/* Comments Section */}
-        {showComments && (
-          <div className="border-t pt-4 mt-4 space-y-4" data-testid="comments-section">
-
-            {/* Comments List */}
-            <div className="space-y-3" data-testid="comments-list">
-              {comments.map((comment: any) => (
-                <div key={comment.id} className="flex space-x-3">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={comment.author?.avatarUrl} alt={comment.author?.username} />
-                    <AvatarFallback>{comment.author?.username?.[0]?.toUpperCase()}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <div className="bg-muted rounded-lg p-3">
-                      <div className="flex items-center space-x-2 mb-1">
-                        <span className="font-medium text-sm">{comment.author?.username}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
-                        </span>
-                      </div>
-                      <p className="text-sm">{comment.body}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-              {comments.length === 0 && (
-                <p className="text-sm text-muted-foreground text-center py-4">
-                  No comments yet. Be the first to comment!
-                </p>
-              )}
-            </div>
-          </div>
-        )}
       </CardContent>
     </Card>
   );

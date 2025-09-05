@@ -1,4 +1,5 @@
 import { useAuth } from "@/hooks/use-auth";
+import { useUnreadCount } from "@/hooks/use-unread-count";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -10,12 +11,13 @@ interface DesktopHeaderProps {
 
 export default function DesktopHeader({ activeSection, onSectionChange }: DesktopHeaderProps) {
   const { user } = useAuth();
+  const { totalUnreadCount } = useUnreadCount();
 
   const navItems = [
     { id: 'home' as const, label: 'Home', icon: '🏠' },
     { id: 'jobs' as const, label: 'Jobs', icon: '💼' },
     { id: 'create' as const, label: 'Create', icon: '➕' },
-    { id: 'inbox' as const, label: 'Inbox', icon: '📧', badge: 2 },
+    { id: 'inbox' as const, label: 'Inbox', icon: '📧', badge: totalUnreadCount > 0 ? totalUnreadCount : undefined },
     { id: 'profile' as const, label: 'Profile', icon: '👤' },
   ];
 

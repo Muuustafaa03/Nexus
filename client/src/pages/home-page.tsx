@@ -6,7 +6,6 @@ import { api, type PostWithAuthor } from "@/lib/api";
 import DesktopHeader from "@/components/layout/desktop-header";
 import MobileNav from "@/components/layout/mobile-nav";
 import PostCard from "@/components/post/post-card";
-import CreatePost from "@/components/post/create-post";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -56,19 +55,7 @@ export default function HomePage() {
           }}
         />
       )}
-      {isMobile && (
-        <MobileNav 
-          activeSection="home" 
-          onSectionChange={(section) => {
-            if (section === 'jobs') setLocation('/jobs');
-            else if (section === 'inbox') setLocation('/inbox');
-            else if (section === 'profile') setLocation('/profile');
-            else if (section === 'create') setLocation('/create');
-            else if (section === 'home') setLocation('/');
-          }}
-        />
-      )}
-      <main className={`${!isMobile ? 'pt-16' : 'pb-16'} px-4`}>
+      <main className={`${!isMobile ? 'pt-16' : ''} pb-16 px-4`}>
         <div className="max-w-4xl mx-auto space-y-6" data-testid="home-section">
           {/* Feed Header */}
           <Card className="border border-border" data-testid="feed-header">
@@ -99,8 +86,6 @@ export default function HomePage() {
             </CardContent>
           </Card>
 
-          {/* Create Post */}
-          <CreatePost onPostCreated={refetch} />
 
           {/* Feed Content */}
           <div className="space-y-6" data-testid="posts-list">
@@ -163,18 +148,17 @@ export default function HomePage() {
         </div>
       </main>
       
-      {/* Mobile Navigation */}
-      {isMobile && (
-        <MobileNav 
-          activeSection="home" 
-          onSectionChange={(section) => {
-            if (section === 'jobs') setLocation('/jobs');
-            else if (section === 'inbox') setLocation('/inbox');
-            else if (section === 'profile') setLocation('/profile');
-            else if (section === 'create') setLocation('/create');
-          }} 
-        />
-      )}
+      {/* Bottom Navigation - Always Visible */}
+      <MobileNav 
+        activeSection="home" 
+        onSectionChange={(section) => {
+          if (section === 'jobs') setLocation('/jobs');
+          else if (section === 'inbox') setLocation('/inbox');
+          else if (section === 'profile') setLocation('/profile');
+          else if (section === 'create') setLocation('/create');
+          else if (section === 'home') setLocation('/');
+        }} 
+      />
     </div>
   );
 }

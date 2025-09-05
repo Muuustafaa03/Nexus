@@ -1,10 +1,14 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import DesktopHeader from "@/components/layout/desktop-header";
+import MobileNav from "@/components/layout/mobile-nav";
 import ProfileHeader from "@/components/profile/profile-header";
 import PostCard from "@/components/post/post-card";
 import { api, type PostWithAuthor } from "@/lib/api";
@@ -13,6 +17,8 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<'posts' | 'settings'>('posts');
   const [showDrafts, setShowDrafts] = useState(false);
   const { user } = useAuth();
+  const isMobile = useIsMobile();
+  const [, setLocation] = useLocation();
 
   // For now, we'll show the current user's profile
   // In a real app, this would be determined by the route parameter
@@ -47,7 +53,20 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6" data-testid="profile-page">
+    <div className="min-h-screen bg-background">
+      {!isMobile && (
+        <DesktopHeader 
+          activeSection="profile" 
+          onSectionChange={(section) => {
+            if (section === 'home') setLocation('/');
+            else if (section === 'jobs') setLocation('/jobs');
+            else if (section === 'inbox') setLocation('/inbox');
+            else if (section === 'create') setLocation('/create');
+          }}
+        />
+      )}
+      <main className={`${!isMobile ? 'pt-16' : ''} pb-16 px-4`}>
+        <div className="max-w-4xl mx-auto space-y-6" data-testid="profile-page">
       {/* Profile Header */}
       <ProfileHeader 
         user={userWithPostCount}
@@ -166,6 +185,19 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
       )}
+        </div>
+      </main>
+      
+      {/* Bottom Navigation - Always Visible */}
+      <MobileNav 
+        activeSection="profile" 
+        onSectionChange={(section) => {
+          if (section === 'home') setLocation('/');
+          else if (section === 'jobs') setLocation('/jobs');
+          else if (section === 'inbox') setLocation('/inbox');
+          else if (section === 'create') setLocation('/create');
+        }}
+      />
     </div>
   );
 }

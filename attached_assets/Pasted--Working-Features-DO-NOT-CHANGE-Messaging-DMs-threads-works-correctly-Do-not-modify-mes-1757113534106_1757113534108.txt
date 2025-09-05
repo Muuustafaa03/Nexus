@@ -1,0 +1,66 @@
+# 🔒 Working Features (DO NOT CHANGE)
+- Messaging (DMs + threads) works correctly. Do not modify messaging logic or UI.
+- Likes are functioning correctly.
+- Feed sorting (Trending | Recent) is working.
+
+# 🛠️ Patch Requests (Fix these issues only)
+
+## 1. Home page
+- Remove post creation/draft form from Home.
+- Post creation must only exist in the **/create** route.
+- Do not touch feed display logic (posts, likes, comments, saves remain as-is).
+
+## 2. PostCard (Delete button)
+- Place Delete button in the **top-right corner** of each PostCard.
+- Clicking Delete should call the DELETE endpoint and remove the post from UI without requiring a refresh.
+- Do not modify Like or Comment logic.
+
+## 3. Comments
+- After submitting a comment:
+  - Comment count increments (this already works).
+  - Display the list of comments **below the post body**.
+- Each comment shows: **author username + body + timestamp**.
+- Scope limited to comment rendering. Do not modify the post composer.
+
+## 4. Jobs page
+- Populate Jobs page with seeded job cards.
+- Use the flip-card UI: 
+  - Front: job title, company, tags, level, remote flag, salary, posted date.
+  - Back: blurb, fake “Apply” link, Save/Share buttons.
+- Ensure jobs render correctly on `/jobs`.
+
+### Seed Data Reminder
+- Update the Prisma seed script to include multiple **Job records** with realistic fake data:
+  - Title, company, salary range, tags, level, location, remote flag, posted date, short blurb, and fake Apply link.
+- Verify that seeded jobs appear on the Jobs page after running `prisma db seed`.
+
+## 5. Profile navigation
+- Enable navigation from Profile to other screens (Home, Jobs, Create, Inbox).
+- Fix routing so Profile does not trap the user.
+
+## 6. Drafts
+- Save drafts to the database and display them in Profile under a **Drafts section**.
+- Allow resuming/editing a draft from Profile.
+- Publishing a draft moves it into the main Posts list.
+
+## 7. Username update
+- When changing username in Profile settings:
+  - Update the database record.
+  - Reflect new username across posts, comments, and profile immediately.
+- Ensure uniqueness check remains enforced.
+
+## 8. Message badges
+- Current bug: unread badge does not decrease after reading a message.
+- Fix logic so:
+  - When a thread is opened, all messages in that thread are marked **read**.
+  - The unread badge for that thread disappears immediately.
+  - The overall Inbox tab badge disappears once all threads are read.
+- Do not change any other messaging behavior.
+
+## 9. Navigation menus (critical for desktop demo)
+- Bottom navigation bar should appear at the **bottom of the screen on both mobile and desktop**.
+- Current bug: nav appears at the top on desktop.
+- Fix styling/layout so that:
+  - On desktop, bottom nav is pinned to the bottom of the viewport.
+  - On mobile, keep bottom nav pinned to the bottom (already working).
+- Do not move or duplicate nav to the top of the screen.
