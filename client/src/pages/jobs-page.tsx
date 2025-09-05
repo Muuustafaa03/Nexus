@@ -19,7 +19,7 @@ export default function JobsPage() {
     queryKey: ['/api/jobs', searchQuery, levelFilter, locationFilter],
     queryFn: () => api.getJobs({
       query: searchQuery || undefined,
-      level: levelFilter || undefined,
+      level: levelFilter && levelFilter !== 'all' ? levelFilter : undefined,
       remote: locationFilter === 'remote' ? true : locationFilter === 'onsite' ? false : undefined,
     }),
   });
@@ -78,7 +78,7 @@ export default function JobsPage() {
                   <SelectValue placeholder="All Levels" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Levels</SelectItem>
+                  <SelectItem value="all">All Levels</SelectItem>
                   <SelectItem value="Entry Level">Entry Level</SelectItem>
                   <SelectItem value="Mid Level">Mid Level</SelectItem>
                   <SelectItem value="Senior Level">Senior Level</SelectItem>
@@ -90,7 +90,7 @@ export default function JobsPage() {
                   <SelectValue placeholder="All Locations" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Locations</SelectItem>
+                  <SelectItem value="all">All Locations</SelectItem>
                   <SelectItem value="remote">Remote</SelectItem>
                   <SelectItem value="hybrid">Hybrid</SelectItem>
                   <SelectItem value="onsite">On-site</SelectItem>

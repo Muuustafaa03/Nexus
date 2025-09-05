@@ -64,7 +64,11 @@ export default function InboxTabs() {
 
   const unreadNotifications = notifications.filter(n => !n.isRead);
   const unreadMessages = allThreads.reduce((sum, thread) => {
-    // Calculate unread count for current user
+    // Calculate unread count for current user only
+    // For demo purposes, we'll just count the hardcoded Portal Official thread as having 1 unread
+    if (thread.id === 'portal-official-thread') {
+      return sum + 1;
+    }
     return sum + (thread.unreadForUserA || thread.unreadForUserB || 0);
   }, 0);
 
@@ -265,6 +269,14 @@ export default function InboxTabs() {
                           hasUnread ? 'bg-accent/50' : ''
                         }`}
                         data-testid={`message-thread-${thread.id}`}
+                        onClick={() => {
+                          if (thread.id === 'portal-official-thread') {
+                            toast({
+                              title: "Portal Official",
+                              description: "Thanks for checking out Portal! This is a demo conversation.",
+                            });
+                          }
+                        }}
                       >
                         <Avatar className="h-10 w-10">
                           <AvatarImage src={thread.otherUser.avatarUrl} alt={thread.otherUser.username} />

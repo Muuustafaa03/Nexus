@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { api, type PostWithAuthor } from "@/lib/api";
 import { formatDistanceToNow } from "date-fns";
+import { queryClient } from "@/lib/queryClient";
 
 interface PostCardProps {
   post: PostWithAuthor;
@@ -33,6 +34,10 @@ export default function PostCard({ post, onUpdate }: PostCardProps) {
       setNewComment("");
       refetchComments();
       onUpdate();
+      // Force invalidate the comments query cache
+      queryClient.invalidateQueries({
+        queryKey: ['/api/posts', post.id, 'comments']
+      });
       toast({
         title: "Comment added",
         description: "Your comment has been posted!",
@@ -139,9 +144,21 @@ export default function PostCard({ post, onUpdate }: PostCardProps) {
               {post.title}
             </h2>
             {post.description && (
-              <p className="text-muted-foreground mb-4" data-testid="text-post-description">
+              <p className="text-muted-foreground mb-2" data-testid="text-post-description">
                 {post.description}
               </p>
+            )}
+            {post.body && (
+              <div className="text-foreground mb-4" data-testid="text-post-body">
+                <p className="whitespace-pre-wrap">
+                  {post.body.length > 300 ? `${post.body.substring(0, 300)}...` : post.body}
+                </p>
+                {post.body.length > 300 && (
+                  <button className="text-primary hover:underline text-sm mt-2">
+                    Read more
+                  </button>
+                )}
+              </div>
             )}
             
             {/* Tags */}

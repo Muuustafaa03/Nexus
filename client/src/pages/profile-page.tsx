@@ -15,14 +15,14 @@ export default function ProfilePage() {
 
   // For now, we'll show the current user's profile
   // In a real app, this would be determined by the route parameter
-  const { data: userPosts = [], refetch: refetchPosts } = useQuery<PostWithAuthor[]>({
-    queryKey: ['/api/user/posts', user?.id],
-    queryFn: () => api.getPosts('recent'), // This would be filtered by user in a real implementation
+  const { data: allPosts = [], refetch: refetchPosts } = useQuery<PostWithAuthor[]>({
+    queryKey: ['/api/posts'],
+    queryFn: () => api.getPosts('recent'),
     enabled: !!user,
   });
 
-  // Filter posts to show only the current user's posts
-  const currentUserPosts = userPosts.filter(post => post.author.id === user?.id);
+  // Filter posts to show only the current user's posts (including drafts)
+  const currentUserPosts = allPosts.filter(post => post.author.id === user?.id);
 
   if (!user) {
     return (
@@ -34,6 +34,8 @@ export default function ProfilePage() {
 
   const userWithPostCount = {
     ...user,
+    bio: user?.bio || undefined,
+    avatarUrl: user?.avatarUrl || undefined,
     postsCount: currentUserPosts.length,
   };
 
