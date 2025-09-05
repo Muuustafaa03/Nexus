@@ -19,19 +19,11 @@ export default function ProfilePage() {
   const isMobile = useIsMobile();
   const [, setLocation] = useLocation();
 
-  // For now, we'll show the current user's profile
-  // In a real app, this would be determined by the route parameter
-  const { data: allPosts = [], refetch: refetchPosts } = useQuery<PostWithAuthor[]>({
-    queryKey: ['/api/posts'],
-    queryFn: () => api.getPosts('recent'),
+  // Fetch the current user's published posts directly
+  const { data: currentUserPosts = [], refetch: refetchPosts } = useQuery<PostWithAuthor[]>({
+    queryKey: ['/api/posts/user', user?.id],
+    queryFn: () => api.getUserPosts(user!.id),
     enabled: !!user,
-  });
-
-  // Filter posts to show only the current user's published posts
-  const currentUserPosts = allPosts.filter(post => {
-    const isUserPost = post.author.id === user?.id;
-    // Only show published posts
-    return isUserPost && !post.isDraft;
   });
 
   if (!user) {

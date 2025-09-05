@@ -1,0 +1,39 @@
+# 🔒 Working Features (DO NOT CHANGE)
+- Bottom navigation bar is correctly visible on the Inbox screen. Keep it pinned at the bottom on all screens.
+- Post delete works correctly (removes from DB and UI). Do not alter delete behavior.
+
+# 🐛 Bug Fix Requests (Fix only these)
+
+## 1) Profile: Published posts not showing
+- Current bug: Published posts created by the logged-in user do not appear on their Profile.
+- Expected:
+  - Profile should display a list/grid of the **user’s published posts** (exclude drafts).
+  - When a post is published, it should immediately be visible on the author’s Profile without refresh.
+- Implementation guidance:
+  - Ensure the Profile data fetch filters by `authorId = currentUserId` AND `isDraft = false`.
+  - Confirm server route returns these posts and the client renders them.
+
+## 2) Comments: Not visible
+- Current bug: Cannot view comments on posts.
+- Expected:
+  - When opening a post OR after submitting a comment, show a **comments list below the post body**.
+  - Each comment displays: **author username + comment body** (no timestamp needed).
+  - Comment count already increments; keep that intact.
+- Implementation guidance:
+  - Add/fix the fetch for comments by `postId` and render the list below the post body.
+  - After submit, append the new comment to the list (no full reload required).
+
+## 3) Branding: Portal logo inconsistent
+- Current bug: The Portal logo is empty/different on some screens compared to the login screen.
+- Expected:
+  - Use a **single, consistent Portal logo/wordmark** across the entire app (login, Home, Jobs, Create, Inbox, Profile).
+- Implementation guidance:
+  - Centralize the logo asset (e.g., `/assets/portal-logo.svg` or a shared component) and reference the **same asset/component** on all pages.
+  - Remove any duplicate/mismatched logo assets.
+
+# ✅ After applying fixes, verify:
+- Create and publish a post → it appears on Profile immediately.
+- Open a post with existing comments → comments list is visible with author + body.
+- Add a new comment → it shows in the list right away; count increments.
+- Logo looks identical on Login and all main screens.
+- Inbox bottom nav and delete behavior remain unchanged.

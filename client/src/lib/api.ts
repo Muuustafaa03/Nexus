@@ -71,6 +71,9 @@ export const api = {
   getPosts: (sort: 'trending' | 'recent' = 'recent', cursor?: string) =>
     fetch(`/api/posts?sort=${sort}${cursor ? `&cursor=${cursor}` : ''}`).then(r => r.json()),
 
+  getUserPosts: (userId: string) =>
+    fetch(`/api/posts/user/${userId}`).then(r => r.json()),
+
   createPost: (post: {
     title: string;
     description?: string;

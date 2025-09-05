@@ -24,6 +24,7 @@ export interface IStorage {
   getPost(id: string): Promise<Post | undefined>;
   getPostsWithAuthor(sort: 'trending' | 'recent', cursor?: string, limit?: number): Promise<Array<Post & { author: User }>>;
   getPostsByUser(userId: string, cursor?: string, limit?: number): Promise<Post[]>;
+  getPostsWithAuthorByUser(userId: string, cursor?: string, limit?: number): Promise<Array<Post & { author: User }>>;
   createPost(authorId: string, post: InsertPost): Promise<Post>;
   updatePost(id: string, updates: Partial<Post>): Promise<Post | undefined>;
   deletePost(id: string): Promise<void>;
@@ -229,6 +230,27 @@ export class DatabaseStorage implements IStorage {
     
     // Delete the post itself
     await prisma.post.delete({ where: { id } });
+  }
+
+  async getPostsWithAuthorByUser(userId: string, cursor?: string, limit: number = 20): Promise<Array<Post & { author: User }>> {
+    const whereClause = cursor ? {
+      AND: [
+        { authorId: userId },
+        { isDraft: false },
+        { createdAt: { lt: new Date(cursor) } }
+      ]
+    } : { 
+      authorId: userId,
+      isDraft: false 
+    };
+
+    const posts = await prisma.post.findMany({
+      where: whereClause,
+      include: { author: true },
+      orderBy: { createdAt: 'desc' },
+      take: limit
+    });
+    return posts;
   }
 
   async likePost(userId: string, postId: string): Promise<void> {

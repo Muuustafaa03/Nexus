@@ -43,6 +43,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/posts/user/:id", async (req, res) => {
+    try {
+      const posts = await storage.getPostsWithAuthorByUser(req.params.id);
+      res.json(posts);
+    } catch (error) {
+      console.error("Get user posts error:", error);
+      res.status(500).json({ message: "Failed to fetch user posts" });
+    }
+  });
+
   app.post("/api/posts", async (req, res) => {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ message: "Authentication required" });
@@ -185,6 +195,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Unsave post error:", error);
       res.status(500).json({ message: "Failed to unsave post" });
+    }
+  });
+
+  app.get("/api/posts/:id/comments", async (req, res) => {
+    try {
+      const comments = await storage.getComments(req.params.id);
+      res.json(comments);
+    } catch (error) {
+      console.error("Get comments error:", error);
+      res.status(500).json({ message: "Failed to fetch comments" });
     }
   });
 
