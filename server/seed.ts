@@ -340,10 +340,25 @@ What's your experience with Kubernetes? What would you do differently?`,
     }
   ];
 
+  // Create jobs using Prisma directly since createJob doesn't exist in storage
+  console.log("Creating sample jobs...");
+  const { prisma } = storage as any; // Access prisma instance
+  
   for (const jobData of jobs) {
-    // Note: In a real application, you might want to check if job already exists
-    console.log(`✓ Would create job: ${jobData.title} at ${jobData.company}`);
-    // For now, just log since we don't have a createJob method that handles all this data
+    await prisma.job.create({
+      data: {
+        title: jobData.title,
+        company: jobData.company,
+        location: jobData.location,
+        salaryRange: jobData.salaryRange,
+        tags: jobData.tags,
+        level: jobData.level,
+        remote: jobData.remote,
+        blurb: jobData.blurb,
+        applyUrl: jobData.applyUrl
+      }
+    });
+    console.log(`✓ Created job: ${jobData.title} at ${jobData.company}`);
   }
 
   // Create some sample follows between users

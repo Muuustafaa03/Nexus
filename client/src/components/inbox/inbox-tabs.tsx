@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +11,7 @@ import { formatDistanceToNow } from "date-fns";
 
 export default function InboxTabs() {
   const [activeTab, setActiveTab] = useState<'notifications' | 'messages'>('notifications');
+  const [, setLocation] = useLocation();
   const { toast } = useToast();
 
   const { data: notifications = [], refetch: refetchNotifications } = useQuery<Notification[]>({
@@ -271,10 +273,8 @@ export default function InboxTabs() {
                         data-testid={`message-thread-${thread.id}`}
                         onClick={() => {
                           if (thread.id === 'portal-official-thread') {
-                            toast({
-                              title: "Portal Official",
-                              description: "Thanks for checking out Portal! This is a demo conversation.",
-                            });
+                            // Navigate to conversation page
+                            setLocation('/conversation');
                           }
                         }}
                       >

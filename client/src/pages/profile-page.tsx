@@ -11,6 +11,7 @@ import { api, type PostWithAuthor } from "@/lib/api";
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<'posts' | 'settings'>('posts');
+  const [showDrafts, setShowDrafts] = useState(false);
   const { user } = useAuth();
 
   // For now, we'll show the current user's profile
@@ -22,7 +23,13 @@ export default function ProfilePage() {
   });
 
   // Filter posts to show only the current user's posts (including drafts)
-  const currentUserPosts = allPosts.filter(post => post.author.id === user?.id);
+  const currentUserPosts = allPosts.filter(post => {
+    const isUserPost = post.author.id === user?.id;
+    if (!isUserPost) return false;
+    
+    // If showDrafts is true, show only drafts; otherwise show only published posts
+    return showDrafts ? post.isDraft : !post.isDraft;
+  });
 
   if (!user) {
     return (
@@ -74,6 +81,28 @@ export default function ProfilePage() {
       {/* Tab Content */}
       {activeTab === 'posts' ? (
         <div className="space-y-4" data-testid="posts-content">
+          {/* Drafts Toggle */}
+          <Card className="border border-border">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-foreground">
+                  {showDrafts ? 'My Drafts' : 'My Published Posts'}
+                </h3>
+                <div className="flex items-center space-x-2">
+                  <Label htmlFor="drafts-toggle" className="text-sm text-muted-foreground">
+                    Show Drafts
+                  </Label>
+                  <Checkbox
+                    id="drafts-toggle"
+                    checked={showDrafts}
+                    onCheckedChange={(checked) => setShowDrafts(checked === true)}
+                    data-testid="checkbox-drafts-toggle"
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
           {currentUserPosts.length === 0 ? (
             <Card className="p-8 text-center" data-testid="empty-user-posts">
               <CardContent>

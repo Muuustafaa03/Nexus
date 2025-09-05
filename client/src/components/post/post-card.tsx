@@ -20,6 +20,7 @@ export default function PostCard({ post, onUpdate }: PostCardProps) {
   const [isSaved, setIsSaved] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState("");
+  const [isExpanded, setIsExpanded] = useState(false);
   const { toast } = useToast();
 
   const { data: comments = [], refetch: refetchComments } = useQuery({
@@ -151,11 +152,14 @@ export default function PostCard({ post, onUpdate }: PostCardProps) {
             {post.body && (
               <div className="text-foreground mb-4" data-testid="text-post-body">
                 <p className="whitespace-pre-wrap">
-                  {post.body.length > 300 ? `${post.body.substring(0, 300)}...` : post.body}
+                  {post.body.length > 300 && !isExpanded ? `${post.body.substring(0, 300)}...` : post.body}
                 </p>
                 {post.body.length > 300 && (
-                  <button className="text-primary hover:underline text-sm mt-2">
-                    Read more
+                  <button 
+                    onClick={() => setIsExpanded(!isExpanded)}
+                    className="text-primary hover:underline text-sm mt-2"
+                  >
+                    {isExpanded ? 'Read less' : 'Read more'}
                   </button>
                 )}
               </div>
