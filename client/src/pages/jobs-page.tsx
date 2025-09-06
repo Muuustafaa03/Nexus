@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import JobFlipCard from "@/components/job/job-flip-card";
-import DesktopHeader from "@/components/layout/desktop-header";
 import MobileNav from "@/components/layout/mobile-nav";
 import { api, type Job } from "@/lib/api";
 
@@ -50,29 +49,16 @@ export default function JobsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {!isMobile && (
-        <DesktopHeader 
-          activeSection="jobs" 
-          onSectionChange={(section) => {
-            if (section === 'home') setLocation('/');
-            else if (section === 'inbox') setLocation('/inbox');
-            else if (section === 'profile') setLocation('/profile');
-            else if (section === 'create') setLocation('/create');
-          }}
-        />
-      )}
-      {isMobile && (
-        <MobileNav 
-          activeSection="jobs" 
-          onSectionChange={(section) => {
-            if (section === 'home') setLocation('/');
-            else if (section === 'inbox') setLocation('/inbox');
-            else if (section === 'profile') setLocation('/profile');
-            else if (section === 'create') setLocation('/create');
-          }}
-        />
-      )}
-      <main className={`${!isMobile ? 'pt-16' : ''} pb-16 px-4`}>
+      <MobileNav 
+        activeSection="jobs" 
+        onSectionChange={(section) => {
+          if (section === 'home') setLocation('/');
+          else if (section === 'inbox') setLocation('/inbox');
+          else if (section === 'profile') setLocation('/profile');
+          else if (section === 'create') setLocation('/create');
+        }}
+      />
+      <main className="pb-16 px-4">
         <div className="max-w-4xl mx-auto space-y-6" data-testid="jobs-page">
       {/* Jobs Header */}
       <Card className="border border-border" data-testid="jobs-header">

@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArrowLeft, Send } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import DesktopHeader from "@/components/layout/desktop-header";
 import MobileNav from "@/components/layout/mobile-nav";
 
 export default function ConversationPage() {
@@ -74,18 +73,7 @@ export default function ConversationPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {!isMobile && (
-        <DesktopHeader 
-          activeSection="inbox" 
-          onSectionChange={(section) => {
-            if (section === 'home') setLocation('/');
-            else if (section === 'jobs') setLocation('/jobs');
-            else if (section === 'profile') setLocation('/profile');
-            else if (section === 'create') setLocation('/create');
-          }}
-        />
-      )}
-      <main className={`${!isMobile ? 'pt-16' : ''} pb-16 px-4`}>
+      <main className="pb-16 px-4">
         <div className="max-w-4xl mx-auto h-screen flex flex-col" data-testid="conversation-page">
       {/* Header */}
       <Card className="border-b rounded-none">

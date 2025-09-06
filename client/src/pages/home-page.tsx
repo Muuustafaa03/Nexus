@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { api, type PostWithAuthor } from "@/lib/api";
-import DesktopHeader from "@/components/layout/desktop-header";
 import MobileNav from "@/components/layout/mobile-nav";
 import PostCard from "@/components/post/post-card";
 import { Button } from "@/components/ui/button";
@@ -44,18 +43,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {!isMobile && (
-        <DesktopHeader 
-          activeSection="home" 
-          onSectionChange={(section) => {
-            if (section === 'jobs') setLocation('/jobs');
-            else if (section === 'inbox') setLocation('/inbox');
-            else if (section === 'profile') setLocation('/profile');
-            else if (section === 'create') setLocation('/create');
-          }}
-        />
-      )}
-      <main className={`${!isMobile ? 'pt-16' : ''} pb-16 px-4`}>
+      <main className="pb-16 px-4">
         <div className="max-w-4xl mx-auto space-y-6" data-testid="home-section">
           {/* Feed Header */}
           <Card className="border border-border" data-testid="feed-header">

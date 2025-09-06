@@ -7,7 +7,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import DesktopHeader from "@/components/layout/desktop-header";
 import MobileNav from "@/components/layout/mobile-nav";
 import ProfileHeader from "@/components/profile/profile-header";
 import PostCard from "@/components/post/post-card";
@@ -43,18 +42,7 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {!isMobile && (
-        <DesktopHeader 
-          activeSection="profile" 
-          onSectionChange={(section) => {
-            if (section === 'home') setLocation('/');
-            else if (section === 'jobs') setLocation('/jobs');
-            else if (section === 'inbox') setLocation('/inbox');
-            else if (section === 'create') setLocation('/create');
-          }}
-        />
-      )}
-      <main className={`${!isMobile ? 'pt-16' : ''} pb-16 px-4`}>
+      <main className="pb-16 px-4">
         <div className="max-w-4xl mx-auto space-y-6" data-testid="profile-page">
       {/* Profile Header */}
       <ProfileHeader 

@@ -2,7 +2,6 @@ import { useLocation } from "wouter";
 import { useIsMobile } from "@/hooks/use-mobile";
 import CreatePost from "@/components/post/create-post";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import DesktopHeader from "@/components/layout/desktop-header";
 import MobileNav from "@/components/layout/mobile-nav";
 
 interface CreatePageProps {
@@ -15,18 +14,7 @@ export default function CreatePage({ onPostCreated }: CreatePageProps) {
 
   return (
     <div className="min-h-screen bg-background">
-      {!isMobile && (
-        <DesktopHeader 
-          activeSection="create" 
-          onSectionChange={(section) => {
-            if (section === 'jobs') setLocation('/jobs');
-            else if (section === 'inbox') setLocation('/inbox');
-            else if (section === 'profile') setLocation('/profile');
-            else if (section === 'home') setLocation('/');
-          }}
-        />
-      )}
-      <main className={`${!isMobile ? 'pt-16' : ''} pb-16 px-4`}>
+      <main className="pb-16 px-4">
         <div className="max-w-4xl mx-auto space-y-6" data-testid="create-page">
       {/* Create Header */}
       <Card className="border border-border" data-testid="create-header">
