@@ -14,6 +14,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
+import { queryClient } from "@/lib/queryClient";
+import { useAuth } from "@/hooks/use-auth";
 
 interface CreatePostProps {
   onPostCreated?: () => void;
@@ -24,6 +26,7 @@ type CreatePostForm = z.infer<typeof insertPostSchema>;
 export default function CreatePost({ onPostCreated }: CreatePostProps) {
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const form = useForm<CreatePostForm>({
     resolver: zodResolver(insertPostSchema),
@@ -43,11 +46,24 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
       const response = await api.createPost(data);
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast({
         title: "Post created!",
         description: "Your post has been published successfully.",
       });
+      
+      // Invalidate profile posts cache if not a draft
+      if (!data.isDraft && user) {
+        queryClient.invalidateQueries({
+          queryKey: ['/api/posts/user', user.id]
+        });
+      }
+      
+      // Invalidate general posts feed
+      queryClient.invalidateQueries({
+        queryKey: ['/api/posts']
+      });
+      
       form.reset();
       onPostCreated?.();
     },

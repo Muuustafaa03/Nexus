@@ -1,0 +1,45 @@
+# 🚨 SINGLE REGRESSION ONLY — DO NOT CHANGE ANYTHING ELSE
+Everything is ready for the demo. The ONLY issue to fix is below. Do not modify, refactor, rename, rearrange, restyle, or “improve” ANY other code, pages, components, routes, schemas, or data. If a change is not required to fix this exact bug, DO NOT TOUCH IT.
+
+## 🔧 Regression: Profile posts no longer visible (restore previous working behavior)
+Symptom:
+- On the Profile screen, the logged-in user’s **published** posts no longer appear. This used to work.
+
+Expected:
+- Profile shows ONLY the author’s **published** posts (exclude drafts) for the **current logged-in user**.
+- Newly published posts appear on the author’s Profile **without a full page reload**.
+- Sort order: newest first (createdAt DESC).
+
+## ✅ Guardrails — ABSOLUTELY DO NOT CHANGE
+- Messaging / DMs: no code or UI changes.
+- Delete post behavior: no changes.
+- Bottom navigation (including Inbox): no changes.
+- Jobs page & job cards: no changes.
+- Auth, session, schema, seeds, AI endpoints, styles, layouts: no changes.
+- Do NOT add new dependencies, env vars, or config. Do NOT alter Prisma schema or migrations.
+
+## 💡 Implementation Guidance (minimal, targeted)
+- Server endpoint used by the Profile screen MUST return posts where:
+  - `authorId === currentUserId`
+  - `isDraft === false`
+- Client/Profile screen MUST render that list for **my profile**.
+- If publish triggers a state update, ensure the Profile list updates (append/prepend or lightweight refetch).
+- Make the SMALLEST possible diff to restore prior behavior.
+
+## 🕵️ Temporary Diagnostics (remove after confirming fix)
+Add short-lived logs ONLY around the Profile posts fetch (server + client):
+- Log resolved `currentUserId` used in the query.
+- Log query filters and the **count** of returned posts.
+- Check `isDraft` is a boolean (not "false"/"true" strings).
+- Confirm no extra filter (e.g., `publishedAt != null`) blocks results.
+- Confirm pagination/cursor isn’t slicing everything out.
+
+After verifying, **remove these logs**. Do not leave debug output elsewhere.
+
+## ✅ Acceptance Criteria (must pass)
+1) Existing published posts for the logged-in user appear on the Profile screen on first load.
+2) After publishing a new post, it appears on the Profile immediately (without full page reload).
+3) Drafts do NOT appear on the Profile.
+4) ZERO regressions: Messaging, Delete, Bottom nav, Jobs, and everything else remain unchanged.
+
+Repeat: If a change is not strictly necessary to fix THIS regression, DO NOT MAKE IT.
